@@ -18,6 +18,9 @@ class Program
 
         Console.WriteLine("Connected to MQTT. Starting loop...");
 
+        // Start the simple web server for health checks
+        _ = Task.Run(() => WebServer.StartAsync());
+
         int delay = AppSettings.LoopIntervalSeconds;
 
         while (true)

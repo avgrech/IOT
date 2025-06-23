@@ -17,5 +17,6 @@ namespace ZigbeeHomeAutomation.Helpers
         public static string MqttIp => Configuration["Mqtt:BrokerIp"];
         public static int MqttPort => int.Parse(Configuration["Mqtt:BrokerPort"] ?? "1883");
         public static int LoopIntervalSeconds => int.Parse(Configuration["System:LoopIntervalSeconds"] ?? "5");
+        public static int HttpPort => int.Parse(Configuration["HttpServer:Port"] ?? "8080");
     }
 }
