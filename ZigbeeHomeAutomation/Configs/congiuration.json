@@ -1,0 +1,93 @@
+{
+  "ConfigurationName": "Night Security",
+  "ConfigurationDate": "2025-06-10T12:00:00",
+  "Rules": [
+    {
+      "conditon": [
+        {
+          "Sensor": {
+            "deviceName": "PersonSensor",
+            "paramiterName": "occupancy",
+            "state": true
+          },
+          "state": true,
+          "timeStartParamiter": "19:00",
+          "timeEndParamiter": "23:59",
+          "ComparasonOperator": "equalTo"
+        }
+      ],
+      "TrueConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "ON",
+          "paramiterName": "state"
+        }
+      ],
+      "FalseConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "OFF",
+          "paramiterName": "state"
+        }
+      ]
+    },
+    {
+      "conditon": [
+        {
+          "Sensor": {
+            "deviceName": "PersonSensor",
+            "paramiterName": "occupancy",
+            "state": true
+          },
+          "state": true,
+          "timeStartParamiter": "00:00",
+          "timeEndParamiter": "06:00",
+          "ComparasonOperator": "equalTo"
+        }
+      ],
+      "TrueConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "ON",
+          "paramiterName": "state"
+        }
+      ],
+      "FalseConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "OFF",
+          "paramiterName": "state"
+        }
+      ]
+    },
+    {
+      "conditon": [
+        {
+          "Sensor": {
+            "deviceName": "PersonSensor",
+            "paramiterName": "occupancy",
+            "state": false
+          },
+          "state": "False",
+          "timeStartParamiter": "00:01",
+          "timeEndParamiter": "23:59",
+          "ComparasonOperator": "equalTo"
+        }
+      ],
+      "TrueConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "OFF",
+          "paramiterName": "state"
+        }
+      ],
+      "FalseConditiong": [
+        {
+          "deviceName": "outdoorLight",
+          "state": "OFF",
+          "paramiterName": "state"
+        }
+      ]
+    }
+  ]
+}
