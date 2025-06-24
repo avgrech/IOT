@@ -29,7 +29,7 @@ class Program
             try
             {
                 Loop(); // your Arduino-style loop
-                await Task.Delay(delay * 1000); // delay like delay(1/10) in Arduino (1/10 second)
+                await Task.Delay(delay * 1000); // delay for the configured number of seconds
             }
             catch (Exception ex) { 
             Console.WriteLine(ex.ToString());
