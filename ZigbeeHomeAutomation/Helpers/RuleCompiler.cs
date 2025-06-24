@@ -28,7 +28,7 @@ namespace ZigbeeHomeAutomation.Helpers
                     break;
                 }
 
-                string currentValue = GetSensorState(cond.Sensor.deviceName, cond.Sensor.paramiterName);
+                string currentValue = GetSensorState(cond.Sensor);
 
                 if (string.IsNullOrEmpty(currentValue))
                 {
@@ -88,45 +88,60 @@ namespace ZigbeeHomeAutomation.Helpers
 
         private int BoolToInt(bool val) => val ? 1 : 0;
 
-        private string GetSensorState(string deviceName, string paramName)
+        private string GetSensorState(sensor sensor)
         {
-
-            string? actual = SensorStateHelper.GetSensorValue(deviceName, paramName);
+            string? actual;
+            if (sensor.deviceType == DeviceType.Zigbee)
+            {
+                actual = SensorStateHelper.GetSensorValue(sensor.deviceName, sensor.paramiterName);
+            }
+            else
+            {
+                actual = TuyaClient.GetSensorValue(sensor.deviceName, sensor.paramiterName).Result;
+            }
             if (actual != null)
             {
                 return actual;
             }
 
-            Console.WriteLine($"Sensor state not found for {deviceName}:{paramName}");
+            Console.WriteLine($"Sensor state not found for {sensor.deviceName}:{sensor.paramiterName}");
             return "";
         }
 
         private async void ExecuteAction(Action action)
         {
             Console.WriteLine($"[ACTION] Setting {action.deviceName} with parameter {action.paramiterName} to {action.state}");
-            if (Mqtt._mqttClient == null || !Mqtt._mqttClient.IsConnected)
+
+            if (action.deviceType == DeviceType.Zigbee)
             {
-                Console.WriteLine("❌ MQTT client is not connected. Cannot send command.");
-                return;
+                if (Mqtt._mqttClient == null || !Mqtt._mqttClient.IsConnected)
+                {
+                    Console.WriteLine("❌ MQTT client is not connected. Cannot send command.");
+                    return;
+                }
+
+                string topic = $"zigbee2mqtt/{action.deviceName}/set";
+
+                var payload = new Dictionary<string, object>
+                {
+                    { action.paramiterName, action.state }
+                };
+
+                string json = JsonConvert.SerializeObject(payload);
+
+                var message = new MqttApplicationMessageBuilder()
+                    .WithTopic(topic)
+                    .WithPayload(json)
+                    .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                    .Build();
+
+                await Mqtt._mqttClient.PublishAsync(message);
+                Console.WriteLine($"📤 Sent MQTT command → {topic}: {json}");
             }
-
-            string topic = $"zigbee2mqtt/{action.deviceName}/set";
-
-            var payload = new Dictionary<string, object>
-        {
-            { action.paramiterName, action.state }
-        };
-
-            string json = JsonConvert.SerializeObject(payload);
-
-            var message = new MqttApplicationMessageBuilder()
-                .WithTopic(topic)
-                .WithPayload(json)
-                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
-                .Build();
-
-            await Mqtt._mqttClient.PublishAsync(message);
-            Console.WriteLine($"📤 Sent MQTT command → {topic}: {json}");
+            else
+            {
+                await TuyaClient.SendCommandAsync(action.deviceName, action.paramiterName, action.state);
+            }
 
         }
 

@@ -15,6 +15,7 @@ class Program
         Console.WriteLine("Starting Raspberry Pi app...");
 
         await ZigbeeHomeAutomation.Helpers.Mqtt.ConnectToMqtt();
+        await TuyaClient.InitializeAsync();
 
         Console.WriteLine("Connected to MQTT. Starting loop...");
 
