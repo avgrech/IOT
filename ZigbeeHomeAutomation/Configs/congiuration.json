@@ -8,7 +8,8 @@
           "Sensor": {
             "deviceName": "PersonSensor",
             "paramiterName": "occupancy",
-            "state": true
+            "state": true,
+            "deviceType": "zigbee"
           },
           "state": true,
           "timeStartParamiter": "19:00",
@@ -20,14 +21,16 @@
         {
           "deviceName": "outdoorLight",
           "state": "ON",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ],
       "FalseConditiong": [
         {
           "deviceName": "outdoorLight",
           "state": "OFF",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ]
     },
@@ -37,7 +40,8 @@
           "Sensor": {
             "deviceName": "PersonSensor",
             "paramiterName": "occupancy",
-            "state": true
+            "state": true,
+            "deviceType": "zigbee"
           },
           "state": true,
           "timeStartParamiter": "00:00",
@@ -49,14 +53,16 @@
         {
           "deviceName": "outdoorLight",
           "state": "ON",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ],
       "FalseConditiong": [
         {
           "deviceName": "outdoorLight",
           "state": "OFF",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ]
     },
@@ -66,7 +72,8 @@
           "Sensor": {
             "deviceName": "PersonSensor",
             "paramiterName": "occupancy",
-            "state": false
+            "state": false,
+            "deviceType": "zigbee"
           },
           "state": "False",
           "timeStartParamiter": "00:01",
@@ -78,14 +85,16 @@
         {
           "deviceName": "outdoorLight",
           "state": "OFF",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ],
       "FalseConditiong": [
         {
           "deviceName": "outdoorLight",
           "state": "OFF",
-          "paramiterName": "state"
+          "paramiterName": "state",
+          "deviceType": "zigbee"
         }
       ]
     }

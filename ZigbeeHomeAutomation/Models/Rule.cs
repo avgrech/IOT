@@ -20,6 +20,7 @@ namespace ZigbeeHomeAutomation.Models
         public string deviceName { get; set; }
         public string paramiterName { get; set; }
         public string state { get; set; }
+        public DeviceType deviceType { get; set; } = DeviceType.Zigbee;
     }
 
     public class Conditon
@@ -36,6 +37,13 @@ namespace ZigbeeHomeAutomation.Models
         public string deviceName { get; set; }
         public string paramiterName { get; set; }
         public string state { get; set; }
+        public DeviceType deviceType { get; set; } = DeviceType.Zigbee;
+    }
+
+    public enum DeviceType
+    {
+        Zigbee,
+        Tuya
     }
 
     public enum ComparasonOperator
