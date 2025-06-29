@@ -22,6 +22,7 @@ class Program
         // Start the simple web server for health checks
         _ = Task.Run(() => WebServer.StartAsync());
         _ = Task.Run(() => ApiSyncLoop());
+        _ = Task.Run(() => DirectMessageLoop());
 
         int delay = AppSettings.LoopIntervalSeconds;
 
@@ -65,6 +66,20 @@ class Program
         while (true)
         {
             await HomeAutomationApiClient.SyncAsync();
+            await Task.Delay(delay * 1000);
+        }
+    }
+
+    static async Task DirectMessageLoop()
+    {
+        int delay = AppSettings.DirectMessageIntervalSeconds;
+        var configs = ConfigurationFileLoader.LoadAllConfigurationsFromFolder();
+        var latest = ConfigurationHelper.GetLatestConfiguration(configs);
+        string routerId = latest?.RouterDeviceId ?? string.Empty;
+
+        while (true)
+        {
+            await HomeAutomationApiClient.GetDirectMessagesAsync(routerId);
             await Task.Delay(delay * 1000);
         }
     }

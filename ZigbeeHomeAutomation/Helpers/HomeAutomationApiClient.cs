@@ -8,6 +8,16 @@ namespace ZigbeeHomeAutomation.Helpers
     {
         private static readonly HttpClient _httpClient = new HttpClient();
 
+        public class DirectMessage
+        {
+            public string RouterDeviceId { get; set; } = string.Empty;
+            public string Type { get; set; } = string.Empty;
+            public string DeviceName { get; set; } = string.Empty;
+            public string ParameterName { get; set; } = string.Empty;
+            public string Value { get; set; } = string.Empty;
+            public int DurationSeconds { get; set; } = 60;
+        }
+
         private class SyncResponse
         {
             public string? ConfigurationContent { get; set; }
@@ -66,6 +76,62 @@ namespace ZigbeeHomeAutomation.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to write configuration: {ex.Message}");
+            }
+        }
+
+        public static async Task<List<DirectMessage>> GetDirectMessagesAsync(string routerId)
+        {
+            var list = new List<DirectMessage>();
+            try
+            {
+                var resp = await _httpClient.GetAsync($"{AppSettings.ApiBaseUrl}/directmessages/{routerId}");
+                if (!resp.IsSuccessStatusCode) return list;
+                var body = await resp.Content.ReadAsStringAsync();
+                var msgs = JsonConvert.DeserializeObject<List<DirectMessage>>(body);
+                if (msgs != null) list = msgs;
+
+                foreach (var msg in list)
+                {
+                    try
+                    {
+                        if (string.Equals(msg.DeviceName, "Pair", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await Mqtt.StartPairingAsync(60);
+                        }
+                        else
+                        {
+                            await Mqtt.SendCommand(msg.DeviceName, msg.ParameterName, msg.Value);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Direct message action error: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Direct message fetch error: {ex.Message}");
+            }
+            return list;
+        }
+
+        public static async Task RegisterDeviceAsync(string routerId, string deviceName)
+        {
+            var payload = new
+            {
+                routerDeviceUniqueId = routerId,
+                name = deviceName
+            };
+            var json = JsonConvert.SerializeObject(payload);
+            try
+            {
+                await _httpClient.PostAsync($"{AppSettings.ApiBaseUrl}/devices/register",
+                    new StringContent(json, Encoding.UTF8, "application/json"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Device register error: {ex.Message}");
             }
         }
     }

@@ -43,6 +43,23 @@ namespace HomeAuthomationAPI.Controllers
             return CreatedAtAction(nameof(Get), new { id = device.Id }, device);
         }
 
+        public class DeviceRegistration
+        {
+            public string RouterDeviceUniqueId { get; set; } = string.Empty;
+            public string Name { get; set; } = string.Empty;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(DeviceRegistration reg)
+        {
+            var router = await _context.RouterDevices.FirstOrDefaultAsync(r => r.UniqueId == reg.RouterDeviceUniqueId);
+            if (router == null) return BadRequest();
+            var device = new Device { Name = reg.Name, RouterDeviceId = router.Id };
+            _context.Devices.Add(device);
+            await _context.SaveChangesAsync();
+            return Ok(device);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, Device device)
         {
