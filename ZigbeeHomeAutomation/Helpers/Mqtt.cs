@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ZigbeeHomeAutomation.Models;
+using Newtonsoft.Json;
 
 namespace ZigbeeHomeAutomation.Helpers
 {
@@ -39,7 +40,12 @@ namespace ZigbeeHomeAutomation.Helpers
 
                 if (!topic.StartsWith("zigbee2mqtt/")) return;
 
-                // Ignore bridge topics
+                if (topic.StartsWith("zigbee2mqtt/bridge/event"))
+                {
+                    await HandleBridgeEvent(payload);
+                    return;
+                }
+
                 if (topic.StartsWith("zigbee2mqtt/bridge")) return;
 
                 // Extract device name (e.g., "PersonSensor" from "zigbee2mqtt/PersonSensor/occupancy")
@@ -80,6 +86,72 @@ namespace ZigbeeHomeAutomation.Helpers
 
 
             await _mqttClient.ConnectAsync(_mqttOptions);
+        }
+
+        private static async Task HandleBridgeEvent(string payload)
+        {
+            try
+            {
+                var evt = Newtonsoft.Json.JsonConvert.DeserializeObject<BridgeEvent>(payload);
+                if (evt?.type == "device_joined" && evt.data?.friendly_name != null)
+                {
+                    await HomeAutomationApiClient.RegisterDeviceAsync(AppSettingsRouterId(), evt.data.friendly_name);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Bridge event error: {ex.Message}");
+            }
+        }
+
+        private static string AppSettingsRouterId()
+        {
+            var configs = ConfigurationFileLoader.LoadAllConfigurationsFromFolder();
+            var latest = ConfigurationHelper.GetLatestConfiguration(configs);
+            return latest?.RouterDeviceId ?? string.Empty;
+        }
+
+        public static async Task SendCommand(string deviceName, string parameterName, string value)
+        {
+            if (_mqttClient == null || !_mqttClient.IsConnected) return;
+
+            string topic = $"zigbee2mqtt/{deviceName}/set";
+            var payload = new Dictionary<string, object>
+            {
+                [parameterName] = value
+            };
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(payload);
+
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(json)
+                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .Build();
+
+            await _mqttClient.PublishAsync(message);
+        }
+
+        public static async Task StartPairingAsync(int durationSeconds = 60)
+        {
+            if (_mqttClient == null || !_mqttClient.IsConnected) return;
+
+            var builder = new MqttApplicationMessageBuilder()
+                .WithTopic("zigbee2mqtt/bridge/request/permit_join");
+
+            await _mqttClient.PublishAsync(builder.WithPayload("true").Build());
+            await Task.Delay(durationSeconds * 1000);
+            await _mqttClient.PublishAsync(builder.WithPayload("false").Build());
+        }
+
+        private class BridgeEvent
+        {
+            public string? type { get; set; }
+            public BridgeEventData? data { get; set; }
+        }
+
+        private class BridgeEventData
+        {
+            public string? friendly_name { get; set; }
         }
     }
 }

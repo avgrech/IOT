@@ -20,5 +20,6 @@ namespace ZigbeeHomeAutomation.Helpers
         public static int HttpPort => int.Parse(Configuration["HttpServer:Port"] ?? "8889");
         public static string ApiBaseUrl => Configuration["HomeAutomationApi:BaseUrl"] ?? string.Empty;
         public static int ApiSyncIntervalSeconds => int.Parse(Configuration["HomeAutomationApi:SyncIntervalSeconds"] ?? "30");
+        public static int DirectMessageIntervalSeconds => int.Parse(Configuration["HomeAutomationApi:DirectMessageIntervalSeconds"] ?? "10");
     }
 }
