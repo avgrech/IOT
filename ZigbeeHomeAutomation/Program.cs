@@ -21,6 +21,7 @@ class Program
 
         // Start the simple web server for health checks
         _ = Task.Run(() => WebServer.StartAsync());
+        _ = Task.Run(() => ApiSyncLoop());
 
         int delay = AppSettings.LoopIntervalSeconds;
 
@@ -56,5 +57,15 @@ class Program
         RuleExecutionHelper.CompileAndExecuteRules(latestConfig, compiler);
 
 
+    }
+
+    static async Task ApiSyncLoop()
+    {
+        int delay = AppSettings.ApiSyncIntervalSeconds;
+        while (true)
+        {
+            await HomeAutomationApiClient.SyncAsync();
+            await Task.Delay(delay * 1000);
+        }
     }
 }

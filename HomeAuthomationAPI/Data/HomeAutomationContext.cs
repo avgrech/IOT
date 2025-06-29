@@ -13,6 +13,7 @@ namespace HomeAuthomationAPI.Data
         public DbSet<Property> Properties => Set<Property>();
         public DbSet<Configuration> Configurations => Set<Configuration>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<DeviceStatus> DeviceStatuses => Set<DeviceStatus>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
