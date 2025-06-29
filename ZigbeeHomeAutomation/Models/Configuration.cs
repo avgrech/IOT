@@ -13,5 +13,7 @@ namespace ZigbeeHomeAutomation.Models
         public DateTime ConfigurationDate {  get; set; }
 
         public string ConfigurationName { get; set; }
+
+        public string RouterDeviceId { get; set; } = string.Empty;
     }
 }
