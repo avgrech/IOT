@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace HomeAuthomationAPI.Models
 {
     public class Property
@@ -8,5 +10,7 @@ namespace HomeAuthomationAPI.Models
         public int OrganisationId { get; set; }
         public Organisation? Organisation { get; set; }
         public Configuration? Configuration { get; set; }
+
+        public ICollection<RouterDevice> RouterDevices { get; set; } = new List<RouterDevice>();
     }
 }
