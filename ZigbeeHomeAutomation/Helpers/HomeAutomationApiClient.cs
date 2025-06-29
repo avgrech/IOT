@@ -89,6 +89,25 @@ namespace ZigbeeHomeAutomation.Helpers
                 var body = await resp.Content.ReadAsStringAsync();
                 var msgs = JsonConvert.DeserializeObject<List<DirectMessage>>(body);
                 if (msgs != null) list = msgs;
+
+                foreach (var msg in list)
+                {
+                    try
+                    {
+                        if (string.Equals(msg.DeviceName, "Pair", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await Mqtt.StartPairingAsync(60);
+                        }
+                        else
+                        {
+                            await Mqtt.SendCommand(msg.DeviceName, msg.ParameterName, msg.Value);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Direct message action error: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {

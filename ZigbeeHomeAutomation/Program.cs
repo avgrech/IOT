@@ -79,19 +79,7 @@ class Program
 
         while (true)
         {
-            var messages = await HomeAutomationApiClient.GetDirectMessagesAsync(routerId);
-            foreach (var msg in messages)
-            {
-                if (msg.Type == "SetParameter")
-                {
-                    await Mqtt.SendCommand(msg.DeviceName, msg.ParameterName, msg.Value);
-                }
-                else if (msg.Type == "PairDevice")
-                {
-                    await Mqtt.StartPairingAsync(msg.DurationSeconds);
-                }
-            }
-
+            await HomeAutomationApiClient.GetDirectMessagesAsync(routerId);
             await Task.Delay(delay * 1000);
         }
     }
