@@ -31,11 +31,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Enable Swagger middleware so that OpenAPI documentation is available
+// in all environments.
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Home Automation API v1");
+});
 
 app.UseHttpsRedirection();
 
