@@ -1,0 +1,166 @@
+@page "/properties/{id:int}"
+@rendermode InteractiveServer
+@inject ApiService Api
+
+<PageTitle>Property Devices</PageTitle>
+
+@if (!Api.IsAuthenticated)
+{
+    <p>Please <NavLink href="/login">log in</NavLink> to manage this property.</p>
+}
+else if (property == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3>@property.Name</h3>
+
+    <h4>Router Devices</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Unique Id</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in routers)
+        {
+            <tr>
+                <td>@r.FriendlyName</td>
+                <td>@r.UniqueId</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteRouter(r.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <EditForm Model="newRouter" OnValidSubmit="AddRouter">
+        <DataAnnotationsValidator />
+        <div class="row g-2 mb-3">
+            <div class="col">
+                <InputText class="form-control" placeholder="Name" @bind-Value="newRouter.FriendlyName" />
+            </div>
+            <div class="col">
+                <InputText class="form-control" placeholder="Unique Id" @bind-Value="newRouter.UniqueId" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" type="submit">Add</button>
+            </div>
+        </div>
+    </EditForm>
+
+    <h4 class="mt-4">Devices</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Router</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var d in devices)
+        {
+            var routerName = routers.FirstOrDefault(r => r.Id == d.RouterDeviceId)?.FriendlyName ?? d.RouterDeviceId.ToString();
+            <tr>
+                <td>@d.Name</td>
+                <td>@routerName</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteDevice(d.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <EditForm Model="newDevice" OnValidSubmit="AddDevice">
+        <DataAnnotationsValidator />
+        <div class="row g-2 mb-3">
+            <div class="col">
+                <InputText class="form-control" placeholder="Name" @bind-Value="newDevice.Name" />
+            </div>
+            <div class="col">
+                <InputSelect class="form-select" @bind-Value="newDevice.RouterDeviceId">
+                    <option value="0" disabled>Select router...</option>
+                    @foreach (var r in routers)
+                    {
+                        <option value="@r.Id">@r.FriendlyName</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" type="submit" disabled="@(newDevice.RouterDeviceId == 0)">Add</button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Property? property;
+    private List<RouterDevice> routers = new();
+    private RouterDevice newRouter = new();
+    private List<Device> devices = new();
+    private Device newDevice = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Api.IsAuthenticated) return;
+
+        property = await Api.GetProperty(id);
+        var allRouters = await Api.GetRouterDevices();
+        routers = allRouters?.Where(r => r.PropertyId == id).ToList() ?? new();
+        var allDevices = await Api.GetDevices();
+        if (allDevices != null)
+        {
+            devices = allDevices.Where(d => routers.Any(r => r.Id == d.RouterDeviceId)).ToList();
+        }
+    }
+
+    private async Task AddRouter()
+    {
+        newRouter.PropertyId = id;
+        var created = await Api.CreateRouterDevice(newRouter);
+        if (created != null)
+        {
+            routers.Add(created);
+            newRouter = new RouterDevice();
+        }
+    }
+
+    private async Task DeleteRouter(int routerId)
+    {
+        await Api.DeleteRouterDevice(routerId);
+        devices.RemoveAll(d => d.RouterDeviceId == routerId);
+        var router = routers.FirstOrDefault(r => r.Id == routerId);
+        if (router != null)
+        {
+            routers.Remove(router);
+        }
+    }
+
+    private async Task AddDevice()
+    {
+        var created = await Api.CreateDevice(newDevice);
+        if (created != null)
+        {
+            devices.Add(created);
+            newDevice = new Device();
+        }
+    }
+
+    private async Task DeleteDevice(int id)
+    {
+        await Api.DeleteDevice(id);
+        var item = devices.FirstOrDefault(d => d.Id == id);
+        if (item != null)
+        {
+            devices.Remove(item);
+        }
+    }
+}

@@ -23,6 +23,7 @@ else
                 <th>Router</th>
                 <th>Organisation</th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +33,9 @@ else
                 <td>@p.Name</td>
                 <td>@p.RouterDeviceId</td>
                 <td>@p.OrganisationId</td>
+                <td>
+                    <NavLink class="btn btn-sm btn-secondary" href="/properties/@p.Id">Manage</NavLink>
+                </td>
                 <td>
                     <button class="btn btn-sm btn-danger" @onclick="() => Delete(p.Id)">Delete</button>
                 </td>
