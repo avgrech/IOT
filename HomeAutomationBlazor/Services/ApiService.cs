@@ -44,6 +44,9 @@ public class ApiService
     public async Task<List<Property>?> GetProperties() =>
         await _http.GetFromJsonAsync<List<Property>>("api/properties");
 
+    public async Task<Property?> GetProperty(int id) =>
+        await _http.GetFromJsonAsync<Property>($"api/properties/{id}");
+
     public async Task<Property?> CreateProperty(Property prop)
     {
         var res = await _http.PostAsJsonAsync("api/properties", prop);
@@ -53,6 +56,32 @@ public class ApiService
 
     public async Task DeleteProperty(int id) =>
         await _http.DeleteAsync($"api/properties/{id}");
+
+    public async Task<List<RouterDevice>?> GetRouterDevices() =>
+        await _http.GetFromJsonAsync<List<RouterDevice>>("api/routerdevices");
+
+    public async Task<RouterDevice?> CreateRouterDevice(RouterDevice router)
+    {
+        var res = await _http.PostAsJsonAsync("api/routerdevices", router);
+        if (!res.IsSuccessStatusCode) return null;
+        return await res.Content.ReadFromJsonAsync<RouterDevice>();
+    }
+
+    public async Task DeleteRouterDevice(int id) =>
+        await _http.DeleteAsync($"api/routerdevices/{id}");
+
+    public async Task<List<Device>?> GetDevices() =>
+        await _http.GetFromJsonAsync<List<Device>>("api/devices");
+
+    public async Task<Device?> CreateDevice(Device dev)
+    {
+        var res = await _http.PostAsJsonAsync("api/devices", dev);
+        if (!res.IsSuccessStatusCode) return null;
+        return await res.Content.ReadFromJsonAsync<Device>();
+    }
+
+    public async Task DeleteDevice(int id) =>
+        await _http.DeleteAsync($"api/devices/{id}");
 
     private record TokenResponse(string token);
 
