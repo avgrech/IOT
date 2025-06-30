@@ -1,0 +1,79 @@
+@page "/organisations"
+@rendermode InteractiveServer
+@inject ApiService Api
+
+<PageTitle>Organisations</PageTitle>
+
+<h3>Organisations</h3>
+
+@if (!Api.IsAuthenticated)
+{
+    <p>Please <NavLink href="/login">log in</NavLink> to manage organisations.</p>
+}
+else if (orgs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var o in orgs)
+        {
+            <tr>
+                <td>@o.Name</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(o.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <EditForm Model="newOrg" OnValidSubmit="AddOrganisation">
+        <DataAnnotationsValidator />
+        <div class="input-group mb-3">
+            <InputText class="form-control" placeholder="New organisation" @bind-Value="newOrg.Name" />
+            <button class="btn btn-primary" type="submit">Add</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private List<Organisation>? orgs;
+    private Organisation newOrg = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Api.IsAuthenticated)
+        {
+            orgs = await Api.GetOrganisations();
+        }
+    }
+
+    private async Task AddOrganisation()
+    {
+        var created = await Api.CreateOrganisation(newOrg);
+        if (created != null)
+        {
+            orgs?.Add(created);
+            newOrg = new();
+        }
+    }
+
+    private async Task Delete(int id)
+    {
+        await Api.DeleteOrganisation(id);
+        var item = orgs?.FirstOrDefault(o => o.Id == id);
+        if (item != null)
+        {
+            orgs!.Remove(item);
+        }
+    }
+}
