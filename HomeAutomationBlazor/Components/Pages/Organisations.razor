@@ -1,6 +1,7 @@
 @page "/organisations"
 @rendermode InteractiveServer
 @inject ApiService Api
+@implements IDisposable
 
 <PageTitle>Organisations</PageTitle>
 
@@ -68,10 +69,30 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Api.AuthStateChanged += OnAuthChanged;
         if (Api.IsAuthenticated)
         {
-            orgs = await Api.GetOrganisations() ?? new List<Organisation>();
+            await LoadDataAsync();
         }
+    }
+
+    private async void OnAuthChanged()
+    {
+        if (Api.IsAuthenticated)
+        {
+            await LoadDataAsync();
+        }
+        else
+        {
+            orgs = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        orgs = await Api.GetOrganisations() ?? new List<Organisation>();
+        StateHasChanged();
     }
 
     private async Task AddOrganisation()
@@ -112,4 +133,9 @@ else
     }
 
     private void CancelEdit() => editOrg = null;
+
+    public void Dispose()
+    {
+        Api.AuthStateChanged -= OnAuthChanged;
+    }
 }
