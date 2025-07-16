@@ -34,7 +34,17 @@ else
                 <tr>
                     <td><InputText class="form-control" @bind-Value="editProp.Name" /></td>
                     <td><InputText class="form-control" @bind-Value="editProp.RouterDeviceId" /></td>
-                    <td><InputNumber class="form-control" @bind-Value="editProp.OrganisationId" /></td>
+                    <td>
+                        <InputSelect class="form-select" @bind-Value="editProp.OrganisationId">
+                            @if (organisations != null)
+                            {
+                                @foreach (var o in organisations)
+                                {
+                                    <option value="@o.Id">@o.Name</option>
+                                }
+                            }
+                        </InputSelect>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-primary me-2" @onclick="SaveEdit">Save</button>
                         <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
@@ -47,7 +57,7 @@ else
                 <tr>
                     <td>@p.Name</td>
                     <td>@p.RouterDeviceId</td>
-                    <td>@p.OrganisationId</td>
+                    <td>@(organisations?.FirstOrDefault(o => o.Id == p.OrganisationId)?.Name ?? p.OrganisationId.ToString())</td>
                     <td>
                         <NavLink class="btn btn-sm btn-secondary me-2" href="@($"/properties/{p.Id}")">Manage</NavLink>
                         <button class="btn btn-sm btn-secondary" @onclick="() => StartEdit(p)">Edit</button>
@@ -71,7 +81,16 @@ else
                 <InputText class="form-control" placeholder="Router" @bind-Value="newProp.RouterDeviceId" />
             </div>
             <div class="col">
-                <InputNumber class="form-control" @bind-Value="newProp.OrganisationId" />
+                <InputSelect class="form-select" @bind-Value="newProp.OrganisationId">
+                    <option value="0" disabled>Select organisation...</option>
+                    @if (organisations != null)
+                    {
+                        @foreach (var o in organisations)
+                        {
+                            <option value="@o.Id">@o.Name</option>
+                        }
+                    }
+                </InputSelect>
             </div>
             <div class="col-auto">
                 <button class="btn btn-primary" type="submit">Add</button>
@@ -82,6 +101,7 @@ else
 
 @code {
     private List<Property>? props;
+    private List<Organisation>? organisations;
     private Property newProp = new();
     private Property? editProp;
 
@@ -90,6 +110,7 @@ else
         if (Api.IsAuthenticated)
         {
             props = await Api.GetProperties();
+            organisations = await Api.GetOrganisations();
         }
     }
 
