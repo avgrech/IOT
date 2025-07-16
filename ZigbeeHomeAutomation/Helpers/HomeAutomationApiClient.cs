@@ -1,12 +1,54 @@
 using System.Text;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using ZigbeeHomeAutomation.Models;
 
 namespace ZigbeeHomeAutomation.Helpers
 {
     public static class HomeAutomationApiClient
     {
         private static readonly HttpClient _httpClient = new HttpClient();
+        private static string? _token;
+
+        public static async Task AuthenticateAsync()
+        {
+            var payload = new
+            {
+                Username = AppSettings.ApiUsername,
+                Password = AppSettings.ApiPassword
+            };
+
+            var json = JsonConvert.SerializeObject(payload);
+            try
+            {
+                var resp = await _httpClient.PostAsync($"{AppSettings.ApiBaseUrl}/users/login",
+                    new StringContent(json, Encoding.UTF8, "application/json"));
+                if (!resp.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Authentication failed: {resp.StatusCode}");
+                    return;
+                }
+
+                var body = await resp.Content.ReadAsStringAsync();
+                var tokenResp = JsonConvert.DeserializeObject<TokenResponse>(body);
+                _token = tokenResp?.token;
+                if (_token != null)
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", _token);
+                    Console.WriteLine("Authenticated with Home Automation API.");
+                }
+                else
+                {
+                    Console.WriteLine("Authentication response missing token.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Authentication error: {ex.Message}");
+            }
+        }
 
         public class DirectMessage
         {
@@ -133,6 +175,11 @@ namespace ZigbeeHomeAutomation.Helpers
             {
                 Console.WriteLine($"Device register error: {ex.Message}");
             }
+        }
+
+        private class TokenResponse
+        {
+            public string? token { get; set; }
         }
     }
 }
