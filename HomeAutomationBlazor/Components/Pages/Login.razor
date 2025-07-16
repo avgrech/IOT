@@ -7,6 +7,15 @@
 
 <h3>@(Api.IsAuthenticated ? "Logout" : "Login")</h3>
 
+@if (!Api.IsAuthenticated)
+{
+    <div class="mb-4">
+        <h4>Welcome Back</h4>
+        <p>Control your devices, view real-time status, and manage automations — all in one place.</p>
+        <p>Login to your account to continue</p>
+    </div>
+}
+
 @if (!string.IsNullOrEmpty(error))
 {
     <div class="alert alert-danger">@error</div>
