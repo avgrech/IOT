@@ -1,27 +1,37 @@
 using HomeAuthomationAPI.Data;
 using HomeAuthomationAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace HomeAuthomationAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RouterDevicesController : ControllerBase
+    [Authorize]
+    public class RouterDevicesController : BaseController
     {
-        private readonly HomeAutomationContext _context;
-        public RouterDevicesController(HomeAutomationContext context)
+        public RouterDevicesController(HomeAutomationContext context) : base(context)
         {
-            _context = context;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RouterDevice>>> Get()
         {
-            return await _context.RouterDevices
+            IQueryable<RouterDevice> query = _context.RouterDevices
                 .Include(r => r.Devices)
                 .Include(r => r.Configurations)
-                .ToListAsync();
+                .Include(r => r.Property);
+
+            if (!IsGlobalAdmin)
+            {
+                var user = await GetCurrentUserAsync();
+                if (user == null) return Forbid();
+                query = query.Where(r => r.Property != null && r.Property.OrganisationId == user.OrganisationId);
+            }
+
+            return await query.ToListAsync();
         }
 
         [HttpGet("{id}")]
@@ -30,8 +40,17 @@ namespace HomeAuthomationAPI.Controllers
             var router = await _context.RouterDevices
                 .Include(r => r.Devices)
                 .Include(r => r.Configurations)
+                .Include(r => r.Property)
                 .FirstOrDefaultAsync(r => r.Id == id);
             if (router == null) return NotFound();
+
+            if (!IsGlobalAdmin)
+            {
+                var user = await GetCurrentUserAsync();
+                if (user == null || router.Property == null || router.Property.OrganisationId != user.OrganisationId)
+                    return Forbid();
+            }
+
             return router;
         }
 

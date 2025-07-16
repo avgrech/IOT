@@ -1,5 +1,7 @@
 using HomeAuthomationAPI.Data;
 using HomeAuthomationAPI.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,21 +9,33 @@ namespace HomeAuthomationAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrganisationsController : ControllerBase
+    [Authorize]
+    public class OrganisationsController : BaseController
     {
-        private readonly HomeAutomationContext _context;
-        public OrganisationsController(HomeAutomationContext context)
+        public OrganisationsController(HomeAutomationContext context) : base(context)
         {
-            _context = context;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Organisation>>> Get()
         {
-            return await _context.Organisations
+            if (IsGlobalAdmin)
+            {
+                return await _context.Organisations
+                    .Include(o => o.Properties)
+                    .Include(o => o.Users)
+                    .ToListAsync();
+            }
+
+            var user = await GetCurrentUserAsync();
+            if (user == null) return Forbid();
+
+            var org = await _context.Organisations
                 .Include(o => o.Properties)
                 .Include(o => o.Users)
+                .Where(o => o.Id == user.OrganisationId)
                 .ToListAsync();
+            return org;
         }
 
         [HttpGet("{id}")]
@@ -32,6 +46,14 @@ namespace HomeAuthomationAPI.Controllers
                 .Include(o => o.Users)
                 .FirstOrDefaultAsync(o => o.Id == id);
             if (organisation == null) return NotFound();
+
+            if (!IsGlobalAdmin)
+            {
+                var user = await GetCurrentUserAsync();
+                if (user == null || organisation.Id != user.OrganisationId)
+                    return Forbid();
+            }
+
             return organisation;
         }
 
