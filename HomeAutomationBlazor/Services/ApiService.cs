@@ -103,6 +103,19 @@ public class ApiService
     public async Task DeleteDevice(int id) =>
         await _http.DeleteAsync($"api/devices/{id}");
 
+    public async Task<List<Configuration>?> GetConfigurations() =>
+        await _http.GetFromJsonAsync<List<Configuration>>("api/configurations");
+
+    public async Task<Configuration?> CreateConfiguration(Configuration cfg)
+    {
+        var res = await _http.PostAsJsonAsync("api/configurations", cfg);
+        if (!res.IsSuccessStatusCode) return null;
+        return await res.Content.ReadFromJsonAsync<Configuration>();
+    }
+
+    public async Task DeleteConfiguration(int id) =>
+        await _http.DeleteAsync($"api/configurations/{id}");
+
     private record TokenResponse(string token);
 
     public void Logout()

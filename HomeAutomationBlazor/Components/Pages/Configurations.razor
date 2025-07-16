@@ -1,0 +1,353 @@
+@page "/configurations"
+@rendermode InteractiveServer
+@inject ApiService Api
+@using HomeAutomationBlazor.Models
+
+<PageTitle>Configurations</PageTitle>
+
+<h3>Configurations</h3>
+
+@if (!Api.IsAuthenticated)
+{
+    <p>Please <NavLink href="/login">log in</NavLink> to manage configurations.</p>
+}
+else if (configs == null || routers == null || devices == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Router</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var c in configs)
+        {
+            var cfg = ParseConfig(c.Content);
+            <tr>
+                <td>@cfg.ConfigurationName</td>
+                <td>@cfg.RouterDeviceId</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" @onclick="() => Edit(c)">Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(c.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary mb-3" @onclick="NewConfig">Add Configuration</button>
+
+    @if (editing != null)
+    {
+        <EditForm Model="editing" OnValidSubmit="SaveConfig">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="editingContent.ConfigurationName" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Router</label>
+                <InputSelect class="form-select" @bind-Value="editingContent.RouterDeviceId">
+                    <option value="">Select router...</option>
+                    @foreach (var r in routers)
+                    {
+                        <option value="@r.UniqueId">@r.FriendlyName</option>
+                    }
+                </InputSelect>
+            </div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                    <a class="nav-link @(activeTab==0?"active":"")" @onclick="() => activeTab = 0">Conditions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeTab==1?"active":"")" @onclick="() => activeTab = 1">True Actions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeTab==2?"active":"")" @onclick="() => activeTab = 2">False Actions</a>
+                </li>
+            </ul>
+            @if (activeTab == 0)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Device</label>
+                    <InputSelect class="form-select" @bind-Value="newCondition.Sensor.deviceName" @onchange="UpdateParameterOptions">
+                        <option value="">Select device...</option>
+                        @foreach (var d in devices)
+                        {
+                            <option value="@d.Name">@d.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Parameter</label>
+                    <InputSelect class="form-select" @bind-Value="newCondition.Sensor.paramiterName">
+                        <option value="">Select parameter...</option>
+                        @if (parameterOptions != null)
+                        {
+                            @foreach (var p in parameterOptions)
+                            {
+                                <option value="@p.Name">@p.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Expected State</label>
+                    <InputText class="form-control" @bind-Value="newCondition.state" />
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label">Start Time</label>
+                        <InputText type="time" class="form-control" @bind-Value="newCondition.timeStartParamiter" />
+                    </div>
+                    <div class="col">
+                        <label class="form-label">End Time</label>
+                        <InputText type="time" class="form-control" @bind-Value="newCondition.timeEndParamiter" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Operator</label>
+                    <InputSelect class="form-select" @bind-Value="newCondition.ComparasonOperator">
+                        @foreach (var op in Enum.GetValues<ComparasonOperator>())
+                        {
+                            <option value="@op">@op</option>
+                        }
+                    </InputSelect>
+                </div>
+                <button class="btn btn-secondary" type="button" @onclick="AddCondition">Add Condition</button>
+
+                <ul class="list-group mt-3">
+                    @foreach (var cond in currentRule.conditon)
+                    {
+                        <li class="list-group-item">
+                            @cond.Sensor.deviceName / @cond.Sensor.paramiterName @cond.ComparasonOperator @cond.state (@cond.timeStartParamiter - @cond.timeEndParamiter)
+                        </li>
+                    }
+                </ul>
+            }
+            else if (activeTab == 1)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Device</label>
+                    <InputSelect class="form-select" @bind-Value="newTrueAction.deviceName" @onchange="UpdateTrueOptions">
+                        <option value="">Select device...</option>
+                        @foreach (var d in devices)
+                        {
+                            <option value="@d.Name">@d.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Parameter</label>
+                    <InputSelect class="form-select" @bind-Value="newTrueAction.paramiterName">
+                        <option value="">Select parameter...</option>
+                        @if (trueOptions != null)
+                        {
+                            @foreach (var p in trueOptions)
+                            {
+                                <option value="@p.Name">@p.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">State</label>
+                    <InputText class="form-control" @bind-Value="newTrueAction.state" />
+                </div>
+                <button class="btn btn-secondary" type="button" @onclick="AddTrueAction">Add Action</button>
+                <ul class="list-group mt-3">
+                    @foreach (var a in currentRule.TrueConditiong)
+                    {
+                        <li class="list-group-item">@a.deviceName/@a.paramiterName -> @a.state</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <label class="form-label">Device</label>
+                    <InputSelect class="form-select" @bind-Value="newFalseAction.deviceName" @onchange="UpdateFalseOptions">
+                        <option value="">Select device...</option>
+                        @foreach (var d in devices)
+                        {
+                            <option value="@d.Name">@d.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Parameter</label>
+                    <InputSelect class="form-select" @bind-Value="newFalseAction.paramiterName">
+                        <option value="">Select parameter...</option>
+                        @if (falseOptions != null)
+                        {
+                            @foreach (var p in falseOptions)
+                            {
+                                <option value="@p.Name">@p.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">State</label>
+                    <InputText class="form-control" @bind-Value="newFalseAction.state" />
+                </div>
+                <button class="btn btn-secondary" type="button" @onclick="AddFalseAction">Add Action</button>
+                <ul class="list-group mt-3">
+                    @foreach (var a in currentRule.FalseConditiong)
+                    {
+                        <li class="list-group-item">@a.deviceName/@a.paramiterName -> @a.state</li>
+                    }
+                </ul>
+            }
+            <div class="mt-3">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <button class="btn btn-secondary ms-2" type="button" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </EditForm>
+    }
+}
+
+@code {
+    private List<Configuration>? configs;
+    private List<RouterDevice>? routers;
+    private List<Device>? devices;
+    private Configuration? editing;
+    private AutomationConfiguration editingContent = new();
+    private Rule currentRule = new();
+    private Condition newCondition = new();
+    private ActionDefinition newTrueAction = new();
+    private ActionDefinition newFalseAction = new();
+    private IEnumerable<Parameter>? parameterOptions;
+    private IEnumerable<Parameter>? trueOptions;
+    private IEnumerable<Parameter>? falseOptions;
+    private int activeTab;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Api.IsAuthenticated)
+        {
+            configs = await Api.GetConfigurations();
+            routers = await Api.GetRouterDevices();
+            devices = await Api.GetDevices();
+        }
+    }
+
+    private AutomationConfiguration ParseConfig(string content)
+    {
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<AutomationConfiguration>(content) ?? new AutomationConfiguration();
+        }
+        catch
+        {
+            return new AutomationConfiguration();
+        }
+    }
+
+    private void NewConfig()
+    {
+        editing = new Configuration();
+        editingContent = new AutomationConfiguration { ConfigurationDate = DateTime.Now };
+        currentRule = new Rule();
+        activeTab = 0;
+    }
+
+    private void Edit(Configuration config)
+    {
+        editing = config;
+        editingContent = ParseConfig(config.Content);
+        currentRule = editingContent.Rules.FirstOrDefault() ?? new Rule();
+        activeTab = 0;
+    }
+
+    private async Task SaveConfig()
+    {
+        editingContent.Rules = new List<Rule> { currentRule };
+        editing!.Content = System.Text.Json.JsonSerializer.Serialize(editingContent);
+        if (editing.Id == 0)
+        {
+            var created = await Api.CreateConfiguration(editing);
+            if (created != null)
+            {
+                configs!.Add(created);
+            }
+        }
+        else
+        {
+            // simple update using create for brevity
+            await Api.DeleteConfiguration(editing.Id);
+            var created = await Api.CreateConfiguration(editing);
+            if (created != null)
+            {
+                var idx = configs!.FindIndex(c => c.Id == editing!.Id);
+                if (idx >= 0) configs[idx] = created;
+            }
+        }
+        CancelEdit();
+    }
+
+    private void CancelEdit()
+    {
+        editing = null;
+        editingContent = new AutomationConfiguration();
+        currentRule = new Rule();
+        newCondition = new Condition();
+        newTrueAction = new ActionDefinition();
+        newFalseAction = new ActionDefinition();
+    }
+
+    private async Task Delete(int id)
+    {
+        await Api.DeleteConfiguration(id);
+        configs?.RemoveAll(c => c.Id == id);
+    }
+
+    private void UpdateParameterOptions(ChangeEventArgs e)
+    {
+        var deviceName = e.Value?.ToString();
+        var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
+        parameterOptions = dev?.Parameters;
+    }
+
+    private void UpdateTrueOptions(ChangeEventArgs e)
+    {
+        var deviceName = e.Value?.ToString();
+        var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
+        trueOptions = dev?.Parameters;
+    }
+
+    private void UpdateFalseOptions(ChangeEventArgs e)
+    {
+        var deviceName = e.Value?.ToString();
+        var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
+        falseOptions = dev?.Parameters;
+    }
+
+    private void AddCondition()
+    {
+        currentRule.conditon.Add(newCondition);
+        newCondition = new Condition();
+    }
+
+
+    private void AddTrueAction()
+    {
+        currentRule.TrueConditiong.Add(newTrueAction);
+        newTrueAction = new ActionDefinition();
+    }
+
+    private void AddFalseAction()
+    {
+        currentRule.FalseConditiong.Add(newFalseAction);
+        newFalseAction = new ActionDefinition();
+    }
+}
