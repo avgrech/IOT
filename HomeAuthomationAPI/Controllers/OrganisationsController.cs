@@ -1,6 +1,5 @@
 using HomeAuthomationAPI.Data;
 using HomeAuthomationAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +8,6 @@ namespace HomeAuthomationAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class OrganisationsController : BaseController
     {
         public OrganisationsController(HomeAutomationContext context) : base(context)
