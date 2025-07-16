@@ -64,6 +64,18 @@ else
                     }
                 </InputSelect>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Rule</label>
+                <select class="form-select" @bind="currentRuleIndex" @bind:event="onchange">
+                    @for (int i = 0; i < editingContent.Rules.Count; i++)
+                    {
+                        <option value="@i" selected="@(i == currentRuleIndex)">Rule @(i + 1)</option>
+                    }
+                </select>
+                <button class="btn btn-secondary mt-2" type="button" @onclick="AddRule">Add Rule</button>
+                <button class="btn btn-danger mt-2 ms-2" type="button" @onclick="DeleteCurrentRule">Delete Rule</button>
+            </div>
+
             <ul class="nav nav-tabs mb-3">
                 <li class="nav-item">
                     <a class="nav-link @(activeTab==0?"active":"")" @onclick="() => activeTab = 0">Conditions</a>
@@ -126,7 +138,7 @@ else
                 <button class="btn btn-secondary" type="button" @onclick="AddCondition">Add Condition</button>
 
                 <ul class="list-group mt-3">
-                    @foreach (var cond in currentRule.conditon)
+                    @foreach (var cond in CurrentRule.conditon)
                     {
                         <li class="list-group-item">
                             @cond.Sensor.deviceName / @cond.Sensor.paramiterName @cond.ComparasonOperator @cond.state (@cond.timeStartParamiter - @cond.timeEndParamiter)
@@ -165,7 +177,7 @@ else
                 </div>
                 <button class="btn btn-secondary" type="button" @onclick="AddTrueAction">Add Action</button>
                 <ul class="list-group mt-3">
-                    @foreach (var a in currentRule.TrueConditiong)
+                    @foreach (var a in CurrentRule.TrueConditiong)
                     {
                         <li class="list-group-item">@a.deviceName/@a.paramiterName -> @a.state</li>
                     }
@@ -202,7 +214,7 @@ else
                 </div>
                 <button class="btn btn-secondary" type="button" @onclick="AddFalseAction">Add Action</button>
                 <ul class="list-group mt-3">
-                    @foreach (var a in currentRule.FalseConditiong)
+                    @foreach (var a in CurrentRule.FalseConditiong)
                     {
                         <li class="list-group-item">@a.deviceName/@a.paramiterName -> @a.state</li>
                     }
@@ -222,7 +234,7 @@ else
     private List<Device>? devices;
     private Configuration? editing;
     private AutomationConfiguration editingContent = new();
-    private Rule currentRule = new();
+    private int currentRuleIndex;
     private Condition newCondition = new();
     private ActionDefinition newTrueAction = new();
     private ActionDefinition newFalseAction = new();
@@ -230,6 +242,26 @@ else
     private IEnumerable<Parameter>? trueOptions;
     private IEnumerable<Parameter>? falseOptions;
     private int activeTab;
+    private Rule CurrentRule => editingContent.Rules[currentRuleIndex];
+
+    private void AddRule()
+    {
+        editingContent.Rules.Add(new Rule());
+        currentRuleIndex = editingContent.Rules.Count - 1;
+    }
+
+
+    private void DeleteCurrentRule()
+    {
+        if (editingContent.Rules.Count <= 1)
+            return;
+
+        editingContent.Rules.RemoveAt(currentRuleIndex);
+        if (currentRuleIndex >= editingContent.Rules.Count)
+        {
+            currentRuleIndex = editingContent.Rules.Count - 1;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -257,7 +289,8 @@ else
     {
         editing = new Configuration();
         editingContent = new AutomationConfiguration { ConfigurationDate = DateTime.Now };
-        currentRule = new Rule();
+        editingContent.Rules.Add(new Rule());
+        currentRuleIndex = 0;
         activeTab = 0;
     }
 
@@ -265,13 +298,16 @@ else
     {
         editing = config;
         editingContent = ParseConfig(config.Content);
-        currentRule = editingContent.Rules.FirstOrDefault() ?? new Rule();
+        if (editingContent.Rules.Count == 0)
+        {
+            editingContent.Rules.Add(new Rule());
+        }
+        currentRuleIndex = 0;
         activeTab = 0;
     }
 
     private async Task SaveConfig()
     {
-        editingContent.Rules = new List<Rule> { currentRule };
         editing!.Content = System.Text.Json.JsonSerializer.Serialize(editingContent);
         if (editing.Id == 0)
         {
@@ -299,7 +335,7 @@ else
     {
         editing = null;
         editingContent = new AutomationConfiguration();
-        currentRule = new Rule();
+        currentRuleIndex = 0;
         newCondition = new Condition();
         newTrueAction = new ActionDefinition();
         newFalseAction = new ActionDefinition();
@@ -334,20 +370,20 @@ else
 
     private void AddCondition()
     {
-        currentRule.conditon.Add(newCondition);
+        CurrentRule.conditon.Add(newCondition);
         newCondition = new Condition();
     }
 
 
     private void AddTrueAction()
     {
-        currentRule.TrueConditiong.Add(newTrueAction);
+        CurrentRule.TrueConditiong.Add(newTrueAction);
         newTrueAction = new ActionDefinition();
     }
 
     private void AddFalseAction()
     {
-        currentRule.FalseConditiong.Add(newFalseAction);
+        CurrentRule.FalseConditiong.Add(newFalseAction);
         newFalseAction = new ActionDefinition();
     }
 }
