@@ -21,5 +21,7 @@ namespace ZigbeeHomeAutomation.Helpers
         public static string ApiBaseUrl => Configuration["HomeAutomationApi:BaseUrl"] ?? string.Empty;
         public static int ApiSyncIntervalSeconds => int.Parse(Configuration["HomeAutomationApi:SyncIntervalSeconds"] ?? "30");
         public static int DirectMessageIntervalSeconds => int.Parse(Configuration["HomeAutomationApi:DirectMessageIntervalSeconds"] ?? "10");
+        public static string ApiUsername => Configuration["HomeAutomationApi:Username"] ?? "admin";
+        public static string ApiPassword => Configuration["HomeAutomationApi:Password"] ?? "admin";
     }
 }
