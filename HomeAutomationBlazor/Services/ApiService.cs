@@ -7,6 +7,7 @@ namespace HomeAutomationBlazor.Services;
 public class ApiService
 {
     private readonly HttpClient _http;
+    public string? LastError { get; private set; }
     public string? Token { get; private set; }
     public bool IsAuthenticated => Token != null;
     public event Action? AuthStateChanged;
@@ -18,14 +19,31 @@ public class ApiService
 
     public async Task<bool> Login(string username, string password)
     {
-        var response = await _http.PostAsJsonAsync("api/users/login", new LoginDto(username, password));
-        if (!response.IsSuccessStatusCode) return false;
-        var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
-        if (result?.token == null) return false;
-        Token = result.token;
-        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-        AuthStateChanged?.Invoke();
-        return true;
+        try
+        {
+            var response = await _http.PostAsJsonAsync("api/users/login", new LoginDto(username, password));
+            if (!response.IsSuccessStatusCode)
+            {
+                LastError = "Invalid username or password";
+                return false;
+            }
+            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (result?.token == null)
+            {
+                LastError = "Invalid server response";
+                return false;
+            }
+            Token = result.token;
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+            LastError = null;
+            AuthStateChanged?.Invoke();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            return false;
+        }
     }
 
     public async Task<List<Organisation>?> GetOrganisations() =>
