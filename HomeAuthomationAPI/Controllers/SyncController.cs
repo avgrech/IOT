@@ -39,11 +39,12 @@ namespace HomeAuthomationAPI.Controllers
             _context.DeviceStatuses.Add(status);
             await _context.SaveChangesAsync();
 
-            var property = await _context.Properties
-                .Include(p => p.Configuration)
-                .FirstOrDefaultAsync(p => p.RouterDeviceId == request.RouterDeviceId);
+            var router = await _context.RouterDevices
+                .Include(r => r.Property)
+                    .ThenInclude(p => p!.Configuration)
+                .FirstOrDefaultAsync(r => r.UniqueId == request.RouterDeviceId);
 
-            string? config = property?.Configuration?.Content;
+            string? config = router?.Property?.Configuration?.Content;
 
             return Ok(new SyncResponse { ConfigurationContent = config });
         }
