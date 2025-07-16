@@ -118,6 +118,17 @@ public class ApiService
     public async Task DeleteRouterDevice(int id) =>
         await _http.DeleteAsync($"api/routerdevices/{id}");
 
+    public async Task TriggerRouterSync(string routerUniqueId)
+    {
+        var payload = new
+        {
+            routerDeviceId = routerUniqueId,
+            type = "sync"
+        };
+
+        await _http.PostAsJsonAsync("api/directmessages", payload);
+    }
+
     public async Task<List<Device>?> GetDevices() =>
         await _http.GetFromJsonAsync<List<Device>>("api/devices");
 

@@ -24,6 +24,7 @@ else
                 <th>Property</th>
                 <th></th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -56,6 +57,9 @@ else
                     <td>@r.FriendlyName</td>
                     <td>@r.UniqueId</td>
                     <td>@propName</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="() => SyncRouter(r.UniqueId)">Sync</button>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEdit(r)">Edit</button>
                     </td>
@@ -150,4 +154,9 @@ else
     }
 
     private void CancelEdit() => editRouter = null;
+
+    private async Task SyncRouter(string routerUniqueId)
+    {
+        await Api.TriggerRouterSync(routerUniqueId);
+    }
 }
