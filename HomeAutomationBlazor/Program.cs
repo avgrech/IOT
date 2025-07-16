@@ -13,9 +13,15 @@ public class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
-        builder.Services.AddHttpClient<ApiService>(client =>
+        builder.Services.AddHttpClient("Api", client =>
         {
             client.BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"] ?? "https://localhost:7119/");
+        });
+
+        builder.Services.AddScoped<ApiService>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            return new ApiService(factory.CreateClient("Api"));
         });
 
         var app = builder.Build();
