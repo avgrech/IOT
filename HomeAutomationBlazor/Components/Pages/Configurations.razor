@@ -30,9 +30,10 @@ else
         @foreach (var c in configs)
         {
             var cfg = ParseConfig(c.Content);
+            var routerName = routers?.FirstOrDefault(r => r.UniqueId == cfg.RouterDeviceId)?.FriendlyName ?? cfg.RouterDeviceId;
             <tr>
                 <td>@cfg.ConfigurationName</td>
-                <td>@cfg.RouterDeviceId</td>
+                <td>@routerName</td>
                 <td>
                     <button class="btn btn-sm btn-secondary" @onclick="() => Edit(c)">Edit</button>
                 </td>
@@ -58,7 +59,7 @@ else
                 <label class="form-label">Router</label>
                 <InputSelect class="form-select" @bind-Value="editingContent.RouterDeviceId">
                     <option value="">Select router...</option>
-                    @foreach (var r in routers)
+                    @foreach (var r in routers ?? Enumerable.Empty<RouterDevice>())
                     {
                         <option value="@r.UniqueId">@r.FriendlyName</option>
                     }
@@ -289,6 +290,7 @@ else
     {
         editing = new Configuration();
         editingContent = new AutomationConfiguration { ConfigurationDate = DateTime.Now };
+        editingContent.RouterDeviceId = string.Empty;
         editingContent.Rules.Add(new Rule());
         currentRuleIndex = 0;
         activeTab = 0;
@@ -298,6 +300,14 @@ else
     {
         editing = config;
         editingContent = ParseConfig(config.Content);
+        if (config.RouterDeviceId.HasValue)
+        {
+            var router = routers?.FirstOrDefault(r => r.Id == config.RouterDeviceId.Value);
+            if (router != null)
+            {
+                editingContent.RouterDeviceId = router.UniqueId;
+            }
+        }
         if (editingContent.Rules.Count == 0)
         {
             editingContent.Rules.Add(new Rule());
@@ -309,6 +319,8 @@ else
     private async Task SaveConfig()
     {
         editing!.Content = System.Text.Json.JsonSerializer.Serialize(editingContent);
+        var router = routers?.FirstOrDefault(r => r.UniqueId == editingContent.RouterDeviceId);
+        editing.RouterDeviceId = router?.Id;
         if (editing.Id == 0)
         {
             var created = await Api.CreateConfiguration(editing);
