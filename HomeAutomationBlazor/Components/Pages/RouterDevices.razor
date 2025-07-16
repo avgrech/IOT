@@ -10,7 +10,7 @@
 {
     <p>Please <NavLink href="/login">log in</NavLink> to manage router devices.</p>
 }
-else if (routers == null || properties == null)
+else if (routers == null || properties == null || devices == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -95,11 +95,32 @@ else
             </div>
         </div>
     </EditForm>
+
+    <h4 class="mt-4">Devices</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Router</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var d in devices!)
+        {
+            var routerName = routers!.FirstOrDefault(r => r.Id == d.RouterDeviceId)?.FriendlyName ?? d.RouterDeviceId.ToString();
+            <tr>
+                <td>@d.Name</td>
+                <td>@routerName</td>
+            </tr>
+        }
+        </tbody>
+    </table>
 }
 
 @code {
     private List<RouterDevice>? routers;
     private List<Property>? properties;
+    private List<Device>? devices;
     private RouterDevice newRouter = new();
     private RouterDevice? editRouter;
 
@@ -109,6 +130,13 @@ else
         {
             routers = await Api.GetRouterDevices();
             properties = await Api.GetProperties();
+            devices = await Api.GetDevices();
+            if (routers != null && devices != null)
+            {
+                // Filter devices to only those linked to the loaded routers
+                var routerIds = routers.Select(r => r.Id).ToHashSet();
+                devices = devices.Where(d => routerIds.Contains(d.RouterDeviceId)).ToList();
+            }
         }
     }
 
@@ -126,6 +154,7 @@ else
     {
         await Api.DeleteRouterDevice(id);
         routers?.RemoveAll(r => r.Id == id);
+        devices?.RemoveAll(d => d.RouterDeviceId == id);
     }
 
     private void StartEdit(RouterDevice router)
