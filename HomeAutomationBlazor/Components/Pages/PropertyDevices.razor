@@ -28,13 +28,28 @@ else
         <tbody>
         @foreach (var r in routers)
         {
-            <tr>
-                <td>@r.FriendlyName</td>
-                <td>@r.UniqueId</td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteRouter(r.Id)">Delete</button>
-                </td>
-            </tr>
+            if (editRouter?.Id == r.Id)
+            {
+                <tr>
+                    <td><InputText class="form-control" @bind-Value="editRouter.FriendlyName" /></td>
+                    <td><InputText class="form-control" @bind-Value="editRouter.UniqueId" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="SaveRouterEdit">Save</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="CancelRouterEdit">Cancel</button>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@r.FriendlyName</td>
+                    <td>@r.UniqueId</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEditRouter(r)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteRouter(r.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
         }
         </tbody>
     </table>
@@ -66,13 +81,35 @@ else
         @foreach (var d in devices)
         {
             var routerName = routers.FirstOrDefault(r => r.Id == d.RouterDeviceId)?.FriendlyName ?? d.RouterDeviceId.ToString();
-            <tr>
-                <td>@d.Name</td>
-                <td>@routerName</td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteDevice(d.Id)">Delete</button>
-                </td>
-            </tr>
+            if (editDevice?.Id == d.Id)
+            {
+                <tr>
+                    <td><InputText class="form-control" @bind-Value="editDevice.Name" /></td>
+                    <td>
+                        <InputSelect class="form-select" @bind-Value="editDevice.RouterDeviceId">
+                            @foreach (var r in routers)
+                            {
+                                <option value="@r.Id">@r.FriendlyName</option>
+                            }
+                        </InputSelect>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="SaveDeviceEdit">Save</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="CancelDeviceEdit">Cancel</button>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@d.Name</td>
+                    <td>@routerName</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEditDevice(d)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteDevice(d.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
         }
         </tbody>
     </table>
@@ -105,8 +142,10 @@ else
     private Property? property;
     private List<RouterDevice> routers = new();
     private RouterDevice newRouter = new();
+    private RouterDevice? editRouter;
     private List<Device> devices = new();
     private Device newDevice = new();
+    private Device? editDevice;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -144,6 +183,32 @@ else
         }
     }
 
+    private void StartEditRouter(RouterDevice router)
+    {
+        editRouter = new RouterDevice
+        {
+            Id = router.Id,
+            FriendlyName = router.FriendlyName,
+            UniqueId = router.UniqueId,
+            PropertyId = router.PropertyId
+        };
+    }
+
+    private async Task SaveRouterEdit()
+    {
+        if (editRouter == null) return;
+        await Api.UpdateRouterDevice(editRouter);
+        var existing = routers.FirstOrDefault(r => r.Id == editRouter.Id);
+        if (existing != null)
+        {
+            existing.FriendlyName = editRouter.FriendlyName;
+            existing.UniqueId = editRouter.UniqueId;
+        }
+        editRouter = null;
+    }
+
+    private void CancelRouterEdit() => editRouter = null;
+
     private async Task AddDevice()
     {
         var created = await Api.CreateDevice(newDevice);
@@ -163,4 +228,29 @@ else
             devices.Remove(item);
         }
     }
+
+    private void StartEditDevice(Device dev)
+    {
+        editDevice = new Device
+        {
+            Id = dev.Id,
+            Name = dev.Name,
+            RouterDeviceId = dev.RouterDeviceId
+        };
+    }
+
+    private async Task SaveDeviceEdit()
+    {
+        if (editDevice == null) return;
+        await Api.UpdateDevice(editDevice);
+        var existing = devices.FirstOrDefault(d => d.Id == editDevice.Id);
+        if (existing != null)
+        {
+            existing.Name = editDevice.Name;
+            existing.RouterDeviceId = editDevice.RouterDeviceId;
+        }
+        editDevice = null;
+    }
+
+    private void CancelDeviceEdit() => editDevice = null;
 }

@@ -26,12 +26,28 @@ else
         <tbody>
         @foreach (var o in orgs)
         {
-            <tr>
-                <td>@o.Name</td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(o.Id)">Delete</button>
-                </td>
-            </tr>
+            if (editOrg?.Id == o.Id)
+            {
+                <tr>
+                    <td>
+                        <InputText class="form-control" @bind-Value="editOrg.Name" />
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="SaveEdit">Save</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@o.Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEdit(o)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Delete(o.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
         }
         </tbody>
     </table>
@@ -48,6 +64,7 @@ else
 @code {
     private List<Organisation>? orgs;
     private Organisation newOrg = new();
+    private Organisation? editOrg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,4 +93,23 @@ else
             orgs!.Remove(item);
         }
     }
+
+    private void StartEdit(Organisation org)
+    {
+        editOrg = new Organisation { Id = org.Id, Name = org.Name };
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editOrg == null) return;
+        await Api.UpdateOrganisation(editOrg);
+        var existing = orgs?.FirstOrDefault(o => o.Id == editOrg.Id);
+        if (existing != null)
+        {
+            existing.Name = editOrg.Name;
+        }
+        editOrg = null;
+    }
+
+    private void CancelEdit() => editOrg = null;
 }
