@@ -51,15 +51,22 @@ namespace HomeAuthomationAPI.Controllers
             return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
         }
 
+        /// <summary>
+        /// Authenticate a user and generate a bearer token.
+        /// </summary>
+        /// <param name="dto">User credentials.</param>
+        /// <returns>A JWT bearer token.</returns>
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<TokenResponse>> Login(LoginDto dto)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == dto.Username);
             if (user == null) return Unauthorized();
             var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
             if (result != PasswordVerificationResult.Success) return Unauthorized();
             var token = GenerateToken(user);
-            return Ok(new { token });
+            return Ok(new TokenResponse(token));
         }
 
         [HttpPut("{id}")]
@@ -106,5 +113,6 @@ namespace HomeAuthomationAPI.Controllers
         }
 
         public record LoginDto(string Username, string Password);
+        public record TokenResponse(string token);
     }
 }
