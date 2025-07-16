@@ -1,9 +1,9 @@
 namespace HomeAutomationBlazor.Models;
 
-public class Device
+public class Parameter
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public int RouterDeviceId { get; set; }
-    public List<Parameter>? Parameters { get; set; }
+    public bool IsSensor { get; set; }
+    public int DeviceId { get; set; }
 }
