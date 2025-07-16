@@ -1,0 +1,15 @@
+@if (Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error.Message</p>
+        <button class="btn btn-link" @onclick="OnDismiss">Dismiss</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Exception? Error { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+}
