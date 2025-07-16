@@ -1,0 +1,153 @@
+@page "/users"
+@rendermode InteractiveServer
+@inject ApiService Api
+
+<PageTitle>Users</PageTitle>
+
+<h3>Users</h3>
+
+@if (!Api.IsAuthenticated)
+{
+    <p>Please <NavLink href="/login">log in</NavLink> to manage users.</p>
+}
+else if (users == null || orgs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Organisation</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var u in users)
+        {
+            var orgName = orgs.FirstOrDefault(o => o.Id == u.OrganisationId)?.Name ?? u.OrganisationId.ToString();
+            if (editUser?.Id == u.Id)
+            {
+                <tr>
+                    <td><InputText class="form-control" @bind-Value="editUser.Username" /></td>
+                    <td>
+                        <InputSelect class="form-select" @bind-Value="editUser.OrganisationId">
+                            @foreach (var o in orgs)
+                            {
+                                <option value="@o.Id">@o.Name</option>
+                            }
+                        </InputSelect>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="SaveEdit">Save</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
+                    </td>
+                    <td></td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@u.Username</td>
+                    <td>@orgName</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEdit(u)">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Delete(u.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+
+    <EditForm Model="newUser" OnValidSubmit="AddUser">
+        <DataAnnotationsValidator />
+        <div class="row g-2 mb-3">
+            <div class="col">
+                <InputText class="form-control" placeholder="Username" @bind-Value="newUser.Username" />
+            </div>
+            <div class="col">
+                <InputText type="password" class="form-control" placeholder="Password" @bind-Value="newUser.PasswordHash" />
+            </div>
+            <div class="col">
+                <InputSelect class="form-select" @bind-Value="newUser.OrganisationId">
+                    <option value="0" disabled>Select organisation...</option>
+                    @foreach (var o in orgs)
+                    {
+                        <option value="@o.Id">@o.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" type="submit" disabled="@(newUser.OrganisationId == 0)">Add</button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private List<User>? users;
+    private List<Organisation>? orgs;
+    private User newUser = new();
+    private User? editUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Api.IsAuthenticated)
+        {
+            users = await Api.GetUsers() ?? new List<User>();
+            orgs = await Api.GetOrganisations() ?? new List<Organisation>();
+        }
+    }
+
+    private async Task AddUser()
+    {
+        var created = await Api.CreateUser(newUser);
+        if (created != null)
+        {
+            users!.Add(created);
+            newUser = new User();
+        }
+    }
+
+    private async Task Delete(int id)
+    {
+        await Api.DeleteUser(id);
+        var item = users?.FirstOrDefault(u => u.Id == id);
+        if (item != null)
+        {
+            users!.Remove(item);
+        }
+    }
+
+    private void StartEdit(User u)
+    {
+        editUser = new User
+        {
+            Id = u.Id,
+            Username = u.Username,
+            PasswordHash = u.PasswordHash,
+            OrganisationId = u.OrganisationId
+        };
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editUser == null) return;
+        await Api.UpdateUser(editUser);
+        var existing = users?.FirstOrDefault(u => u.Id == editUser.Id);
+        if (existing != null)
+        {
+            existing.Username = editUser.Username;
+            existing.OrganisationId = editUser.OrganisationId;
+        }
+        editUser = null;
+    }
+
+    private void CancelEdit() => editUser = null;
+}
