@@ -15,7 +15,7 @@ public class Program
 
         builder.Services.AddHttpClient<ApiService>(client =>
         {
-            client.BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"] ?? "http://localhost:5000/");
+            client.BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"] ?? "https://localhost:7119/");
         });
 
         var app = builder.Build();
