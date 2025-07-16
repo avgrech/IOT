@@ -28,8 +28,18 @@ public class ApiService
         return true;
     }
 
-    public async Task<List<Organisation>?> GetOrganisations() =>
-        await _http.GetFromJsonAsync<List<Organisation>>("api/organisations");
+    public async Task<List<Organisation>?> GetOrganisations()
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<Organisation>>("api/organisations");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.Error.WriteLine($"Error fetching organisations: {ex.Message}");
+            return null;
+        }
+    }
 
     public async Task<Organisation?> CreateOrganisation(Organisation org)
     {
