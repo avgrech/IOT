@@ -1,5 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Linq;
 using HomeAutomationBlazor.Models;
 
 namespace HomeAutomationBlazor.Services;
@@ -10,6 +13,7 @@ public class ApiService
     public string? LastError { get; private set; }
     public string? Token { get; private set; }
     public bool IsAuthenticated => Token != null;
+    public bool IsGlobalAdmin { get; private set; }
     public event Action? AuthStateChanged;
 
     public ApiService(HttpClient http)
@@ -34,6 +38,7 @@ public class ApiService
                 return false;
             }
             Token = result.token;
+            ParseToken();
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
             LastError = null;
             AuthStateChanged?.Invoke();
@@ -146,9 +151,30 @@ public class ApiService
 
     private record TokenResponse(string token);
 
+    private void ParseToken()
+    {
+        IsGlobalAdmin = false;
+        if (Token == null)
+            return;
+        try
+        {
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(Token);
+            if (jwt.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value == "GlobalAdmin")
+            {
+                IsGlobalAdmin = true;
+            }
+        }
+        catch
+        {
+            // ignore parse errors
+        }
+    }
+
     public void Logout()
     {
         Token = null;
+        IsGlobalAdmin = false;
         _http.DefaultRequestHeaders.Authorization = null;
         AuthStateChanged?.Invoke();
     }

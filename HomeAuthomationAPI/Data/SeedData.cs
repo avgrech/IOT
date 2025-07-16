@@ -21,7 +21,12 @@ public static class SeedData
         if (!context.Users.Any())
         {
             var organisationId = context.Organisations.First().Id;
-            var admin = new User { Username = "admin", OrganisationId = organisationId };
+            var admin = new User
+            {
+                Username = "admin",
+                OrganisationId = organisationId,
+                IsGlobalAdmin = true
+            };
             var hasher = new PasswordHasher<User>();
             admin.PasswordHash = hasher.HashPassword(admin, "admin");
             context.Users.Add(admin);
