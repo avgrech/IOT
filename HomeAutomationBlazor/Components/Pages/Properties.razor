@@ -1,6 +1,7 @@
 @page "/properties"
 @rendermode InteractiveServer
 @inject ApiService Api
+@implements IDisposable
 
 <PageTitle>Properties</PageTitle>
 
@@ -107,11 +108,32 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Api.AuthStateChanged += OnAuthChanged;
         if (Api.IsAuthenticated)
         {
-            props = await Api.GetProperties();
-            organisations = await Api.GetOrganisations();
+            await LoadDataAsync();
         }
+    }
+
+    private async void OnAuthChanged()
+    {
+        if (Api.IsAuthenticated)
+        {
+            await LoadDataAsync();
+        }
+        else
+        {
+            props = null;
+            organisations = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        props = await Api.GetProperties();
+        organisations = await Api.GetOrganisations();
+        StateHasChanged();
     }
 
     private async Task AddProperty()
@@ -160,4 +182,9 @@ else
     }
 
     private void CancelEdit() => editProp = null;
+
+    public void Dispose()
+    {
+        Api.AuthStateChanged -= OnAuthChanged;
+    }
 }
