@@ -144,6 +144,24 @@ public class ApiService
     public async Task DeleteConfiguration(int id) =>
         await _http.DeleteAsync($"api/configurations/{id}");
 
+    public async Task<List<User>?> GetUsers() =>
+        await _http.GetFromJsonAsync<List<User>>("api/users");
+
+    public async Task<User?> CreateUser(User user)
+    {
+        var res = await _http.PostAsJsonAsync("api/users", user);
+        if (!res.IsSuccessStatusCode) return null;
+        return await res.Content.ReadFromJsonAsync<User>();
+    }
+
+    public async Task UpdateUser(User user)
+    {
+        await _http.PutAsJsonAsync($"api/users/{user.Id}", user);
+    }
+
+    public async Task DeleteUser(int id) =>
+        await _http.DeleteAsync($"api/users/{id}");
+
     private record TokenResponse(string token);
 
     public void Logout()
