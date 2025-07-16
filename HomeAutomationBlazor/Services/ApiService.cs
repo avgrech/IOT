@@ -55,7 +55,15 @@ public class ApiService
     {
         try
         {
-            return await _http.GetFromJsonAsync<List<Organisation>>("api/organisations");
+            var response = await _http.GetAsync("api/organisations");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<Organisation>>();
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.Error.WriteLine($"Error fetching organisations: {response.StatusCode} {content}");
+            return null;
         }
         catch (HttpRequestException ex)
         {
