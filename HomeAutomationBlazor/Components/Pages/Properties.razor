@@ -21,7 +21,6 @@ else
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Router</th>
                 <th>Organisation</th>
                 <th></th>
                 <th></th>
@@ -34,7 +33,6 @@ else
             {
                 <tr>
                     <td><InputText class="form-control" @bind-Value="editProp.Name" /></td>
-                    <td><InputText class="form-control" @bind-Value="editProp.RouterDeviceId" /></td>
                     <td>
                         <InputSelect class="form-select" @bind-Value="editProp.OrganisationId">
                             @if (organisations != null)
@@ -57,7 +55,6 @@ else
             {
                 <tr>
                     <td>@p.Name</td>
-                    <td>@p.RouterDeviceId</td>
                     <td>@(organisations?.FirstOrDefault(o => o.Id == p.OrganisationId)?.Name ?? p.OrganisationId.ToString())</td>
                     <td>
                         <NavLink class="btn btn-sm btn-secondary me-2" href="@($"/properties/{p.Id}")">Manage</NavLink>
@@ -77,9 +74,6 @@ else
         <div class="row g-2 mb-3">
             <div class="col">
                 <InputText class="form-control" placeholder="Name" @bind-Value="newProp.Name" />
-            </div>
-            <div class="col">
-                <InputText class="form-control" placeholder="Router" @bind-Value="newProp.RouterDeviceId" />
             </div>
             <div class="col">
                 <InputSelect class="form-select" @bind-Value="newProp.OrganisationId">
@@ -162,7 +156,6 @@ else
         {
             Id = prop.Id,
             Name = prop.Name,
-            RouterDeviceId = prop.RouterDeviceId,
             OrganisationId = prop.OrganisationId
         };
     }
@@ -175,7 +168,6 @@ else
         if (existing != null)
         {
             existing.Name = editProp.Name;
-            existing.RouterDeviceId = editProp.RouterDeviceId;
             existing.OrganisationId = editProp.OrganisationId;
         }
         editProp = null;

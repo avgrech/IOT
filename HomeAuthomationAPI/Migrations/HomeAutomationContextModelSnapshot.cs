@@ -86,9 +86,6 @@ namespace HomeAuthomationAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("RouterDeviceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StatusJson")
                         .IsRequired()
@@ -159,9 +156,6 @@ namespace HomeAuthomationAPI.Migrations
                     b.Property<int>("OrganisationId")
                         .HasColumnType("int");
 
-                    b.Property<string>("RouterDeviceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
