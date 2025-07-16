@@ -16,7 +16,6 @@ class Program
 
         await ZigbeeHomeAutomation.Helpers.Mqtt.ConnectToMqtt();
         await TuyaClient.InitializeAsync();
-        await HomeAutomationApiClient.AuthenticateAsync();
 
         Console.WriteLine("Connected to MQTT. Starting loop...");
 

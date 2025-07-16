@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using HomeAuthomationAPI.Data;
 using HomeAuthomationAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,14 +26,12 @@ namespace HomeAuthomationAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> Get()
         {
             return await _context.Users.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<ActionResult<User>> Get(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -70,7 +67,6 @@ namespace HomeAuthomationAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> Put(int id, User user)
         {
             if (id != user.Id) return BadRequest();
@@ -80,7 +76,6 @@ namespace HomeAuthomationAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _context.Users.FindAsync(id);
