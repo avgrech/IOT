@@ -38,6 +38,11 @@ public class ApiService
         return await res.Content.ReadFromJsonAsync<Organisation>();
     }
 
+    public async Task UpdateOrganisation(Organisation org)
+    {
+        await _http.PutAsJsonAsync($"api/organisations/{org.Id}", org);
+    }
+
     public async Task DeleteOrganisation(int id) =>
         await _http.DeleteAsync($"api/organisations/{id}");
 
@@ -54,6 +59,11 @@ public class ApiService
         return await res.Content.ReadFromJsonAsync<Property>();
     }
 
+    public async Task UpdateProperty(Property prop)
+    {
+        await _http.PutAsJsonAsync($"api/properties/{prop.Id}", prop);
+    }
+
     public async Task DeleteProperty(int id) =>
         await _http.DeleteAsync($"api/properties/{id}");
 
@@ -67,6 +77,11 @@ public class ApiService
         return await res.Content.ReadFromJsonAsync<RouterDevice>();
     }
 
+    public async Task UpdateRouterDevice(RouterDevice router)
+    {
+        await _http.PutAsJsonAsync($"api/routerdevices/{router.Id}", router);
+    }
+
     public async Task DeleteRouterDevice(int id) =>
         await _http.DeleteAsync($"api/routerdevices/{id}");
 
@@ -78,6 +93,11 @@ public class ApiService
         var res = await _http.PostAsJsonAsync("api/devices", dev);
         if (!res.IsSuccessStatusCode) return null;
         return await res.Content.ReadFromJsonAsync<Device>();
+    }
+
+    public async Task UpdateDevice(Device dev)
+    {
+        await _http.PutAsJsonAsync($"api/devices/{dev.Id}", dev);
     }
 
     public async Task DeleteDevice(int id) =>

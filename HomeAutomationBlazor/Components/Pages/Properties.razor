@@ -29,17 +29,34 @@ else
         <tbody>
         @foreach (var p in props)
         {
-            <tr>
-                <td>@p.Name</td>
-                <td>@p.RouterDeviceId</td>
-                <td>@p.OrganisationId</td>
-                <td>
-                    <NavLink class="btn btn-sm btn-secondary" href="@($"/properties/{p.Id}")">Manage</NavLink>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(p.Id)">Delete</button>
-                </td>
-            </tr>
+            if (editProp?.Id == p.Id)
+            {
+                <tr>
+                    <td><InputText class="form-control" @bind-Value="editProp.Name" /></td>
+                    <td><InputText class="form-control" @bind-Value="editProp.RouterDeviceId" /></td>
+                    <td><InputNumber class="form-control" @bind-Value="editProp.OrganisationId" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="SaveEdit">Save</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
+                    </td>
+                    <td></td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@p.RouterDeviceId</td>
+                    <td>@p.OrganisationId</td>
+                    <td>
+                        <NavLink class="btn btn-sm btn-secondary me-2" href="@($"/properties/{p.Id}")">Manage</NavLink>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => StartEdit(p)">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Delete(p.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
         }
         </tbody>
     </table>
@@ -66,6 +83,7 @@ else
 @code {
     private List<Property>? props;
     private Property newProp = new();
+    private Property? editProp;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,4 +112,31 @@ else
             props!.Remove(item);
         }
     }
+
+    private void StartEdit(Property prop)
+    {
+        editProp = new Property
+        {
+            Id = prop.Id,
+            Name = prop.Name,
+            RouterDeviceId = prop.RouterDeviceId,
+            OrganisationId = prop.OrganisationId
+        };
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editProp == null) return;
+        await Api.UpdateProperty(editProp);
+        var existing = props?.FirstOrDefault(p => p.Id == editProp.Id);
+        if (existing != null)
+        {
+            existing.Name = editProp.Name;
+            existing.RouterDeviceId = editProp.RouterDeviceId;
+            existing.OrganisationId = editProp.OrganisationId;
+        }
+        editProp = null;
+    }
+
+    private void CancelEdit() => editProp = null;
 }
