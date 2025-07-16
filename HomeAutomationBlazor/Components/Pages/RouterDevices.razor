@@ -1,6 +1,7 @@
 @page "/routerdevices"
 @rendermode InteractiveServer
 @inject ApiService Api
+@using System.Text.Json
 
 <PageTitle>Router Devices</PageTitle>
 
@@ -102,6 +103,7 @@ else
             <tr>
                 <th>Name</th>
                 <th>Router</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -111,10 +113,48 @@ else
             <tr>
                 <td>@d.Name</td>
                 <td>@routerName</td>
+                <td>
+                    <button class="btn btn-sm btn-info" @onclick="() => ShowStatus(d)">Status</button>
+                </td>
             </tr>
         }
         </tbody>
     </table>
+
+    @if (showStatusModal && selectedDevice != null)
+    {
+        <div class="modal show d-block" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@selectedDevice.Name Status</h5>
+                        <button type="button" class="btn-close" @onclick="CloseStatusModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (currentStatus == null)
+                        {
+                            <p><em>No status available.</em></p>
+                        }
+                        else
+                        {
+                            <ul>
+                                @foreach (var p in selectedDevice.Parameters ?? Enumerable.Empty<Parameter>())
+                                {
+                                    currentStatus!.TryGetValue(p.Name, out var val);
+                                    <li><strong>@p.Name</strong>: @(val ?? "N/A")</li>
+                                }
+                            </ul>
+                            <p class="text-muted">Last updated @selectedStatus!.Timestamp.ToLocalTime()</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseStatusModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop show"></div>
+    }
 }
 
 @code {
@@ -123,6 +163,10 @@ else
     private List<Device>? devices;
     private RouterDevice newRouter = new();
     private RouterDevice? editRouter;
+    private Device? selectedDevice;
+    private DeviceStatus? selectedStatus;
+    private Dictionary<string, object>? currentStatus;
+    private bool showStatusModal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -187,5 +231,40 @@ else
     private async Task SyncRouter(string routerUniqueId)
     {
         await Api.TriggerRouterSync(routerUniqueId);
+    }
+
+    private async Task ShowStatus(Device device)
+    {
+        selectedDevice = device;
+        var router = routers!.FirstOrDefault(r => r.Id == device.RouterDeviceId);
+        if (router == null)
+        {
+            selectedStatus = null;
+            currentStatus = null;
+            showStatusModal = true;
+            return;
+        }
+
+        selectedStatus = await Api.GetLatestDeviceStatus(router.UniqueId);
+        currentStatus = null;
+        if (selectedStatus != null)
+        {
+            try
+            {
+                var all = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, object>>>(selectedStatus.StatusJson);
+                if (all != null && all.TryGetValue(device.Name, out var ds))
+                    currentStatus = ds;
+            }
+            catch { }
+        }
+        showStatusModal = true;
+    }
+
+    private void CloseStatusModal()
+    {
+        showStatusModal = false;
+        selectedDevice = null;
+        selectedStatus = null;
+        currentStatus = null;
     }
 }
