@@ -86,6 +86,8 @@ namespace HomeAuthomationAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("int");
 
                     b.Property<string>("StatusJson")
                         .IsRequired()
@@ -95,6 +97,8 @@ namespace HomeAuthomationAPI.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
 
                     b.ToTable("DeviceStatuses");
                 });
@@ -258,6 +262,17 @@ namespace HomeAuthomationAPI.Migrations
                 {
                     b.HasOne("HomeAuthomationAPI.Models.Device", "Device")
                         .WithMany("Parameters")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+                });
+
+            modelBuilder.Entity("HomeAuthomationAPI.Models.DeviceStatus", b =>
+                {
+                    b.HasOne("HomeAuthomationAPI.Models.Device", "Device")
+                        .WithMany()
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

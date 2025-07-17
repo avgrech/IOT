@@ -236,24 +236,14 @@ else
     private async Task ShowStatus(Device device)
     {
         selectedDevice = device;
-        var router = routers!.FirstOrDefault(r => r.Id == device.RouterDeviceId);
-        if (router == null)
-        {
-            selectedStatus = null;
-            currentStatus = null;
-            showStatusModal = true;
-            return;
-        }
 
-        selectedStatus = await Api.GetLatestDeviceStatus(router.UniqueId);
+        selectedStatus = await Api.GetLatestDeviceStatus(device.Id);
         currentStatus = null;
         if (selectedStatus != null)
         {
             try
             {
-                var all = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, object>>>(selectedStatus.StatusJson);
-                if (all != null && all.TryGetValue(device.Name, out var ds))
-                    currentStatus = ds;
+                currentStatus = JsonSerializer.Deserialize<Dictionary<string, object>>(selectedStatus.StatusJson);
             }
             catch { }
         }

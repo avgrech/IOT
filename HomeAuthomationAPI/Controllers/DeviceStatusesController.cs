@@ -16,11 +16,11 @@ public class DeviceStatusesController : ControllerBase
         _context = context;
     }
 
-    [HttpGet("latest/{routerDeviceId}")]
-    public async Task<ActionResult<DeviceStatus>> GetLatest(string routerDeviceId)
+    [HttpGet("latest/{deviceId}")]
+    public async Task<ActionResult<DeviceStatus>> GetLatest(int deviceId)
     {
         var status = await _context.DeviceStatuses
-            .Where(s => s.RouterDeviceId == routerDeviceId)
+            .Where(s => s.DeviceId == deviceId)
             .OrderByDescending(s => s.Timestamp)
             .FirstOrDefaultAsync();
         if (status == null) return NotFound();

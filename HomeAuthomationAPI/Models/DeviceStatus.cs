@@ -3,7 +3,8 @@ namespace HomeAuthomationAPI.Models
     public class DeviceStatus
     {
         public int Id { get; set; }
-        public string RouterDeviceId { get; set; } = string.Empty;
+        public int DeviceId { get; set; }
+        public Device? Device { get; set; }
         public DateTime Timestamp { get; set; }
         public string StatusJson { get; set; } = string.Empty;
     }

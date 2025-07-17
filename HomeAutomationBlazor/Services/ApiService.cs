@@ -155,8 +155,8 @@ public class ApiService
     public async Task DeleteDevice(int id) =>
         await _http.DeleteAsync($"api/devices/{id}");
 
-    public async Task<DeviceStatus?> GetLatestDeviceStatus(string routerDeviceId) =>
-        await _http.GetFromJsonAsync<DeviceStatus>($"api/devicestatuses/latest/{routerDeviceId}");
+    public async Task<DeviceStatus?> GetLatestDeviceStatus(int deviceId) =>
+        await _http.GetFromJsonAsync<DeviceStatus>($"api/devicestatuses/latest/{deviceId}");
 
     public async Task<List<Configuration>?> GetConfigurations() =>
         await _http.GetFromJsonAsync<List<Configuration>>("api/configurations");
