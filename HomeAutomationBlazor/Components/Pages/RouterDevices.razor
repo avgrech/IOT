@@ -131,9 +131,30 @@ else
                         <button type="button" class="btn-close" @onclick="CloseStatusModal"></button>
                     </div>
                     <div class="modal-body">
-                        @if (formattedStatusJson == null)
+                        @if (formattedStatusJson == null && statusKeyValues == null)
                         {
                             <p><em>No status available.</em></p>
+                        }
+                        else if (statusKeyValues != null)
+                        {
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var kvp in statusKeyValues)
+                                {
+                                    <tr>
+                                        <td>@kvp.Key</td>
+                                        <td>@kvp.Value</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                            <p class="text-muted">Last updated @selectedStatus!.Timestamp.ToLocalTime()</p>
                         }
                         else
                         {
@@ -160,6 +181,7 @@ else
     private Device? selectedDevice;
     private DeviceStatus? selectedStatus;
     private string? formattedStatusJson;
+    private List<KeyValuePair<string, string>>? statusKeyValues;
     private bool showStatusModal;
 
     protected override async Task OnInitializedAsync()
@@ -233,12 +255,17 @@ else
 
         selectedStatus = await Api.GetLatestDeviceStatus(device.Id);
         formattedStatusJson = null;
+        statusKeyValues = null;
         if (selectedStatus != null)
         {
             try
             {
                 using var doc = JsonDocument.Parse(selectedStatus.StatusJson);
-                formattedStatusJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
+                statusKeyValues = new List<KeyValuePair<string, string>>();
+                foreach (var prop in doc.RootElement.EnumerateObject())
+                {
+                    statusKeyValues.Add(new KeyValuePair<string, string>(prop.Name, prop.Value.ToString()));
+                }
             }
             catch
             {
@@ -254,5 +281,6 @@ else
         selectedDevice = null;
         selectedStatus = null;
         formattedStatusJson = null;
+        statusKeyValues = null;
     }
 }
