@@ -10,5 +10,6 @@ namespace HomeAuthomationAPI.Models
         public RouterDevice? RouterDevice { get; set; }
         public ICollection<Parameter> Parameters { get; set; } = new List<Parameter>();
         public ICollection<Configuration> Configurations { get; set; } = new List<Configuration>();
+        public ICollection<DeviceStatus> DeviceStatuses { get; set; } = new List<DeviceStatus>();
     }
 }
