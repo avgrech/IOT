@@ -363,21 +363,21 @@ else
     {
         var deviceName = e.Value?.ToString();
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
-        parameterOptions = dev?.Parameters;
+        parameterOptions = dev?.DeviceType?.Parameters;
     }
 
     private void UpdateTrueOptions(ChangeEventArgs e)
     {
         var deviceName = e.Value?.ToString();
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
-        trueOptions = dev?.Parameters;
+        trueOptions = dev?.DeviceType?.Parameters;
     }
 
     private void UpdateFalseOptions(ChangeEventArgs e)
     {
         var deviceName = e.Value?.ToString();
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
-        falseOptions = dev?.Parameters;
+        falseOptions = dev?.DeviceType?.Parameters;
     }
 
     private void AddCondition()

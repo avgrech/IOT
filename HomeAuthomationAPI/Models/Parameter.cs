@@ -7,7 +7,7 @@ namespace HomeAuthomationAPI.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsSensor { get; set; }
-        public int DeviceId { get; set; }
-        public Device? Device { get; set; }
+        public int DeviceTypeId { get; set; }
+        public DeviceType? DeviceType { get; set; }
     }
 }
