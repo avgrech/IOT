@@ -23,7 +23,7 @@ public class ActionDefinition
     public string deviceName { get; set; } = string.Empty;
     public string paramiterName { get; set; } = string.Empty;
     public string state { get; set; } = string.Empty;
-    public DeviceType deviceType { get; set; } = DeviceType.Zigbee;
+    public AutomationDeviceType deviceType { get; set; } = AutomationDeviceType.Zigbee;
 }
 
 public class Condition
@@ -40,10 +40,10 @@ public class Sensor
     public string deviceName { get; set; } = string.Empty;
     public string paramiterName { get; set; } = string.Empty;
     public string state { get; set; } = string.Empty;
-    public DeviceType deviceType { get; set; } = DeviceType.Zigbee;
+    public AutomationDeviceType deviceType { get; set; } = AutomationDeviceType.Zigbee;
 }
 
-public enum DeviceType
+public enum AutomationDeviceType
 {
     Zigbee,
     Tuya

@@ -19,7 +19,8 @@ namespace HomeAuthomationAPI.Controllers
         public async Task<ActionResult<IEnumerable<Device>>> Get()
         {
             return await _context.Devices
-                .Include(d => d.Parameters)
+                .Include(d => d.DeviceType)
+                    .ThenInclude(dt => dt.Parameters)
                 .Include(d => d.Configurations)
                 .ToListAsync();
         }
@@ -28,7 +29,8 @@ namespace HomeAuthomationAPI.Controllers
         public async Task<ActionResult<Device>> Get(int id)
         {
             var device = await _context.Devices
-                .Include(d => d.Parameters)
+                .Include(d => d.DeviceType)
+                    .ThenInclude(dt => dt.Parameters)
                 .Include(d => d.Configurations)
                 .FirstOrDefaultAsync(d => d.Id == id);
             if (device == null) return NotFound();
@@ -47,6 +49,7 @@ namespace HomeAuthomationAPI.Controllers
         {
             public string RouterDeviceUniqueId { get; set; } = string.Empty;
             public string Name { get; set; } = string.Empty;
+            public int DeviceTypeId { get; set; }
         }
 
         [HttpPost("register")]
@@ -54,7 +57,7 @@ namespace HomeAuthomationAPI.Controllers
         {
             var router = await _context.RouterDevices.FirstOrDefaultAsync(r => r.UniqueId == reg.RouterDeviceUniqueId);
             if (router == null) return BadRequest();
-            var device = new Device { Name = reg.Name, RouterDeviceId = router.Id };
+            var device = new Device { Name = reg.Name, RouterDeviceId = router.Id, DeviceTypeId = reg.DeviceTypeId };
             _context.Devices.Add(device);
             await _context.SaveChangesAsync();
             return Ok(device);

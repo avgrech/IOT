@@ -17,6 +17,7 @@ namespace HomeAuthomationAPI.Data
         public DbSet<RouterDevice> RouterDevices => Set<RouterDevice>();
         public DbSet<Device> Devices => Set<Device>();
         public DbSet<Parameter> Parameters => Set<Parameter>();
+        public DbSet<DeviceType> DeviceTypes => Set<DeviceType>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,10 +40,15 @@ namespace HomeAuthomationAPI.Data
                 .WithOne(d => d.RouterDevice)
                 .HasForeignKey(d => d.RouterDeviceId);
 
-            modelBuilder.Entity<Device>()
-                .HasMany(d => d.Parameters)
-                .WithOne(p => p.Device!)
-                .HasForeignKey(p => p.DeviceId);
+            modelBuilder.Entity<DeviceType>()
+                .HasMany(dt => dt.Devices)
+                .WithOne(d => d.DeviceType)
+                .HasForeignKey(d => d.DeviceTypeId);
+
+            modelBuilder.Entity<DeviceType>()
+                .HasMany(dt => dt.Parameters)
+                .WithOne(p => p.DeviceType)
+                .HasForeignKey(p => p.DeviceTypeId);
 
             modelBuilder.Entity<Device>()
                 .HasMany(d => d.Configurations)
