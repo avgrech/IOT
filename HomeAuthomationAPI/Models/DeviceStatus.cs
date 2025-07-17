@@ -8,6 +8,7 @@ namespace HomeAuthomationAPI.Models
 
         public int DeviceId { get; set; }
 
+        [ForeignKey(nameof(DeviceId))]
         public Device? Device { get; set; }
 
         public DateTime Timestamp { get; set; }

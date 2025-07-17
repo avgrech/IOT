@@ -4,6 +4,7 @@ using HomeAuthomationAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeAuthomationAPI.Migrations
 {
     [DbContext(typeof(HomeAutomationContext))]
-    partial class HomeAutomationContextModelSnapshot : ModelSnapshot
+    [Migration("20250717140420_FixModelRelationship")]
+    partial class FixModelRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,6 +97,9 @@ namespace HomeAuthomationAPI.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DeviceId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("StatusJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -104,6 +110,8 @@ namespace HomeAuthomationAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
+
+                    b.HasIndex("DeviceId1");
 
                     b.ToTable("DeviceStatuses");
                 });
@@ -290,10 +298,14 @@ namespace HomeAuthomationAPI.Migrations
             modelBuilder.Entity("HomeAuthomationAPI.Models.DeviceStatus", b =>
                 {
                     b.HasOne("HomeAuthomationAPI.Models.Device", "Device")
-                        .WithMany("DeviceStatuses")
+                        .WithMany()
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("HomeAuthomationAPI.Models.Device", null)
+                        .WithMany("DeviceStatuses")
+                        .HasForeignKey("DeviceId1");
 
                     b.Navigation("Device");
                 });

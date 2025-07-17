@@ -61,9 +61,10 @@ namespace HomeAuthomationAPI.Data
                 .HasForeignKey(c => c.RouterDeviceId);
 
             modelBuilder.Entity<DeviceStatus>()
-                .HasOne(ds => ds.Device)
-                .WithMany()
-                .HasForeignKey(ds => ds.DeviceId);
+                 .HasOne(ds => ds.Device)
+        .WithMany(d => d.DeviceStatuses) 
+        .HasForeignKey(ds => ds.DeviceId)
+        .OnDelete(DeleteBehavior.Cascade); ;
             
             
 
