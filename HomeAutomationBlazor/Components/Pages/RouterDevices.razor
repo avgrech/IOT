@@ -131,19 +131,13 @@ else
                         <button type="button" class="btn-close" @onclick="CloseStatusModal"></button>
                     </div>
                     <div class="modal-body">
-                        @if (currentStatus == null)
+                        @if (formattedStatusJson == null)
                         {
                             <p><em>No status available.</em></p>
                         }
                         else
                         {
-                            <ul>
-                                @foreach (var p in selectedDevice.Parameters ?? Enumerable.Empty<Parameter>())
-                                {
-                                    currentStatus!.TryGetValue(p.Name, out var val);
-                                    <li><strong>@p.Name</strong>: @(val ?? "N/A")</li>
-                                }
-                            </ul>
+                            <pre>@formattedStatusJson</pre>
                             <p class="text-muted">Last updated @selectedStatus!.Timestamp.ToLocalTime()</p>
                         }
                     </div>
@@ -165,7 +159,7 @@ else
     private RouterDevice? editRouter;
     private Device? selectedDevice;
     private DeviceStatus? selectedStatus;
-    private Dictionary<string, object>? currentStatus;
+    private string? formattedStatusJson;
     private bool showStatusModal;
 
     protected override async Task OnInitializedAsync()
@@ -238,14 +232,18 @@ else
         selectedDevice = device;
 
         selectedStatus = await Api.GetLatestDeviceStatus(device.Id);
-        currentStatus = null;
+        formattedStatusJson = null;
         if (selectedStatus != null)
         {
             try
             {
-                currentStatus = JsonSerializer.Deserialize<Dictionary<string, object>>(selectedStatus.StatusJson);
+                using var doc = JsonDocument.Parse(selectedStatus.StatusJson);
+                formattedStatusJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
             }
-            catch { }
+            catch
+            {
+                formattedStatusJson = selectedStatus.StatusJson;
+            }
         }
         showStatusModal = true;
     }
@@ -255,6 +253,6 @@ else
         showStatusModal = false;
         selectedDevice = null;
         selectedStatus = null;
-        currentStatus = null;
+        formattedStatusJson = null;
     }
 }
