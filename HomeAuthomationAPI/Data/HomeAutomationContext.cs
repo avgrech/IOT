@@ -53,6 +53,11 @@ namespace HomeAuthomationAPI.Data
                 .HasMany(r => r.Configurations)
                 .WithOne(c => c.RouterDevice)
                 .HasForeignKey(c => c.RouterDeviceId);
+
+            modelBuilder.Entity<DeviceStatus>()
+                .HasOne(ds => ds.Device)
+                .WithMany()
+                .HasForeignKey(ds => ds.DeviceId);
         }
     }
 }

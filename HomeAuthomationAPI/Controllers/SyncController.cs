@@ -30,19 +30,29 @@ namespace HomeAuthomationAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<SyncResponse>> Post(SyncRequest request)
         {
-            var status = new DeviceStatus
-            {
-                RouterDeviceId = request.RouterDeviceId,
-                Timestamp = DateTime.UtcNow,
-                StatusJson = JsonSerializer.Serialize(request.DeviceStatuses)
-            };
-            _context.DeviceStatuses.Add(status);
-            await _context.SaveChangesAsync();
-
             var router = await _context.RouterDevices
                 .Include(r => r.Property)
                     .ThenInclude(p => p!.Configuration)
+                .Include(r => r.Devices)
                 .FirstOrDefaultAsync(r => r.UniqueId == request.RouterDeviceId);
+
+            if (router != null)
+            {
+                foreach (var kvp in request.DeviceStatuses)
+                {
+                    var device = router.Devices.FirstOrDefault(d => d.Name == kvp.Key);
+                    if (device == null) continue;
+
+                    var ds = new DeviceStatus
+                    {
+                        DeviceId = device.Id,
+                        Timestamp = DateTime.UtcNow,
+                        StatusJson = JsonSerializer.Serialize(kvp.Value)
+                    };
+                    _context.DeviceStatuses.Add(ds);
+                }
+                await _context.SaveChangesAsync();
+            }
 
             string? config = router?.Property?.Configuration?.Content;
 
