@@ -6,26 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeAuthomationAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "DeviceStatuses",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RouterDeviceId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    StatusJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeviceStatuses", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Organisations",
                 columns: table => new
@@ -46,7 +31,6 @@ namespace HomeAuthomationAPI.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RouterDeviceId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrganisationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -155,6 +139,33 @@ namespace HomeAuthomationAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DeviceStatuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DeviceId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StatusJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DeviceId1 = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeviceStatuses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DeviceStatuses_Devices_DeviceId",
+                        column: x => x.DeviceId,
+                        principalTable: "Devices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeviceStatuses_Devices_DeviceId1",
+                        column: x => x.DeviceId1,
+                        principalTable: "Devices",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Parameters",
                 columns: table => new
                 {
@@ -196,6 +207,16 @@ namespace HomeAuthomationAPI.Migrations
                 name: "IX_Devices_RouterDeviceId",
                 table: "Devices",
                 column: "RouterDeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeviceStatuses_DeviceId",
+                table: "DeviceStatuses",
+                column: "DeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeviceStatuses_DeviceId1",
+                table: "DeviceStatuses",
+                column: "DeviceId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Parameters_DeviceId",

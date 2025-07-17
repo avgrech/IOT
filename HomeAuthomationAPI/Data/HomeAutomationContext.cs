@@ -58,6 +58,9 @@ namespace HomeAuthomationAPI.Data
                 .HasOne(ds => ds.Device)
                 .WithMany()
                 .HasForeignKey(ds => ds.DeviceId);
+            
+            
+
         }
     }
 }

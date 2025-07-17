@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeAuthomationAPI.Migrations
 {
     [DbContext(typeof(HomeAutomationContext))]
-    [Migration("20250717073349_changeInDeviceStatus")]
-    partial class changeInDeviceStatus
+    [Migration("20250717085201_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,6 +92,9 @@ namespace HomeAuthomationAPI.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DeviceId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("StatusJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -102,6 +105,8 @@ namespace HomeAuthomationAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
+
+                    b.HasIndex("DeviceId1");
 
                     b.ToTable("DeviceStatuses");
                 });
@@ -268,6 +273,10 @@ namespace HomeAuthomationAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HomeAuthomationAPI.Models.Device", null)
+                        .WithMany("DeviceStatuses")
+                        .HasForeignKey("DeviceId1");
+
                     b.Navigation("Device");
                 });
 
@@ -318,6 +327,8 @@ namespace HomeAuthomationAPI.Migrations
             modelBuilder.Entity("HomeAuthomationAPI.Models.Device", b =>
                 {
                     b.Navigation("Configurations");
+
+                    b.Navigation("DeviceStatuses");
 
                     b.Navigation("Parameters");
                 });
