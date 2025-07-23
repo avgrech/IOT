@@ -32,12 +32,16 @@ else
                 <td>@p.DeviceTypeId</td>
                 <td>@p.IsSensor</td>
                 <td>
-                    <InputCheckbox @bind-Value="p.IsShown" @onchange="() => Save(p)" disabled="@(!Api.IsGlobalAdmin)" />
+                    <InputCheckbox @bind-Value="p.IsShown" disabled="@(!Api.IsGlobalAdmin)" />
                 </td>
             </tr>
         }
         </tbody>
     </table>
+    @if (Api.IsGlobalAdmin)
+    {
+        <button class="btn btn-primary" @onclick="SaveAll">Save</button>
+    }
 }
 
 @code {
@@ -51,9 +55,12 @@ else
         }
     }
 
-    private async Task Save(Parameter p)
+    private async Task SaveAll()
     {
-        if (!Api.IsGlobalAdmin) return;
-        await Api.UpdateParameter(p);
+        if (!Api.IsGlobalAdmin || parameters == null) return;
+        foreach (var param in parameters)
+        {
+            await Api.UpdateParameter(param);
+        }
     }
 }
