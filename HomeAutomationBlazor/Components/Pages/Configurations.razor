@@ -233,6 +233,7 @@ else
     private List<Configuration>? configs;
     private List<RouterDevice>? routers;
     private List<Device>? devices;
+    private List<Parameter>? parameters;
     private Configuration? editing;
     private AutomationConfiguration editingContent = new();
     private int currentRuleIndex;
@@ -271,6 +272,7 @@ else
             configs = await Api.GetConfigurations();
             routers = await Api.GetRouterDevices();
             devices = await Api.GetDevices();
+            parameters = await Api.GetParameters();
         }
     }
 
@@ -365,6 +367,11 @@ else
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
         parameterOptions = dev?.DeviceType?.Parameters?
             .Where(p => p.IsShown);
+        if ((parameterOptions == null || !parameterOptions.Any()) && parameters != null && dev != null)
+        {
+            parameterOptions = parameters
+                .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
+        }
     }
 
     private void UpdateTrueOptions(ChangeEventArgs e)
@@ -373,6 +380,11 @@ else
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
         trueOptions = dev?.DeviceType?.Parameters?
             .Where(p => p.IsShown);
+        if ((trueOptions == null || !trueOptions.Any()) && parameters != null && dev != null)
+        {
+            trueOptions = parameters
+                .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
+        }
     }
 
     private void UpdateFalseOptions(ChangeEventArgs e)
@@ -381,6 +393,11 @@ else
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
         falseOptions = dev?.DeviceType?.Parameters?
             .Where(p => p.IsShown);
+        if ((falseOptions == null || !falseOptions.Any()) && parameters != null && dev != null)
+        {
+            falseOptions = parameters
+                .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
+        }
     }
 
     private void AddCondition()
