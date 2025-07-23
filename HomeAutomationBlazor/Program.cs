@@ -1,5 +1,6 @@
 using HomeAutomationBlazor.Components;
 using HomeAutomationBlazor.Services;
+using Microsoft.JSInterop;
 
 namespace HomeAutomationBlazor;
 
