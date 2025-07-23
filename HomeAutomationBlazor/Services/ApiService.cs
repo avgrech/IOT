@@ -4,21 +4,46 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Linq;
 using HomeAutomationBlazor.Models;
+using Microsoft.JSInterop;
 
 namespace HomeAutomationBlazor.Services;
 
 public class ApiService
 {
     private readonly HttpClient _http;
+    private readonly IJSRuntime _js;
+    private bool _initialized;
     public string? LastError { get; private set; }
     public string? Token { get; private set; }
     public bool IsAuthenticated => Token != null;
     public bool IsGlobalAdmin { get; private set; }
     public event Action? AuthStateChanged;
 
-    public ApiService(HttpClient http)
+    public ApiService(HttpClient http, IJSRuntime js)
     {
         _http = http;
+        _js = js;
+    }
+
+    public async Task InitializeAsync()
+    {
+        if (_initialized) return;
+        _initialized = true;
+        try
+        {
+            var token = await _js.InvokeAsync<string>("authToken.get");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Token = token;
+                ParseToken();
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                AuthStateChanged?.Invoke();
+            }
+        }
+        catch
+        {
+            // ignore errors retrieving token
+        }
     }
 
     public async Task<bool> Login(string username, string password)
@@ -38,6 +63,7 @@ public class ApiService
                 return false;
             }
             Token = result.token;
+            await _js.InvokeVoidAsync("authToken.set", Token);
             ParseToken();
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
             LastError = null;
@@ -219,11 +245,19 @@ public class ApiService
         }
     }
 
-    public void Logout()
+    public async Task Logout()
     {
         Token = null;
         IsGlobalAdmin = false;
         _http.DefaultRequestHeaders.Authorization = null;
+        try
+        {
+            await _js.InvokeVoidAsync("authToken.clear");
+        }
+        catch
+        {
+            // ignore errors clearing token
+        }
         AuthStateChanged?.Invoke();
     }
 }

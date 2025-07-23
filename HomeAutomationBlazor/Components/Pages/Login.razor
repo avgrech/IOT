@@ -58,9 +58,9 @@ else
         }
     }
 
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
-        Api.Logout();
+        await Api.Logout();
         Nav.NavigateTo("/");
     }
 

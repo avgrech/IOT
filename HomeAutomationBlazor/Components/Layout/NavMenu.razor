@@ -1,5 +1,6 @@
 @rendermode InteractiveServer
 @inject ApiService Api
+@inject IJSRuntime JS
 @implements IDisposable
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -83,9 +84,17 @@
         Api.AuthStateChanged += HandleAuthChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Api.InitializeAsync(JS);
+        }
+    }
+
     private void HandleAuthChanged() => InvokeAsync(StateHasChanged);
 
-    private void Logout() => Api.Logout();
+    private async Task Logout() => await Api.Logout();
 
     public void Dispose()
     {
