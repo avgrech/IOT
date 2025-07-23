@@ -48,6 +48,10 @@ else
         if (Api.IsAuthenticated)
         {
             parameters = await Api.GetParameters();
+            if (!Api.IsGlobalAdmin)
+            {
+                parameters = parameters?.Where(p => p.IsShown).ToList();
+            }
         }
     }
 
