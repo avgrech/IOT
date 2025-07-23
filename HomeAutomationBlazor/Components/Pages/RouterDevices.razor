@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @inject ApiService Api
 @using System.Text.Json
+@using HomeAutomationBlazor.Models
+@using System
 
 <PageTitle>Router Devices</PageTitle>
 
@@ -176,6 +178,7 @@ else
     private List<RouterDevice>? routers;
     private List<Property>? properties;
     private List<Device>? devices;
+    private List<Parameter>? parameters;
     private RouterDevice newRouter = new();
     private RouterDevice? editRouter;
     private Device? selectedDevice;
@@ -191,6 +194,8 @@ else
             routers = await Api.GetRouterDevices();
             properties = await Api.GetProperties();
             devices = await Api.GetDevices();
+            parameters = await Api.GetParameters();
+            parameters = parameters?.Where(p => p.IsShown).ToList();
             if (routers != null && devices != null)
             {
                 // Filter devices to only those linked to the loaded routers
@@ -262,9 +267,22 @@ else
             {
                 using var doc = JsonDocument.Parse(selectedStatus.StatusJson);
                 statusKeyValues = new List<KeyValuePair<string, string>>();
+
+                HashSet<string>? allowedProps = null;
+                if (parameters != null)
+                {
+                    allowedProps = parameters
+                        .Where(p => p.DeviceTypeId == device.DeviceTypeId)
+                        .Select(p => p.Name)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                }
+
                 foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    statusKeyValues.Add(new KeyValuePair<string, string>(prop.Name, prop.Value.ToString()));
+                    if (allowedProps == null || allowedProps.Contains(prop.Name))
+                    {
+                        statusKeyValues.Add(new KeyValuePair<string, string>(prop.Name, prop.Value.ToString()));
+                    }
                 }
             }
             catch
