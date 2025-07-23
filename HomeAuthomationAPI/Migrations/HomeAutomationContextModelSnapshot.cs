@@ -156,6 +156,9 @@ namespace HomeAuthomationAPI.Migrations
                     b.Property<bool>("IsSensor")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsShown")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
