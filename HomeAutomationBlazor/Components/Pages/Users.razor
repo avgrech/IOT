@@ -21,6 +21,7 @@ else
             <tr>
                 <th>Username</th>
                 <th>Organisation</th>
+                <th>Admin</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -41,6 +42,9 @@ else
                             }
                         </InputSelect>
                     </td>
+                    <td class="text-center">
+                        <InputCheckbox @bind-Value="editUser.IsGlobalAdmin" />
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-primary me-2" @onclick="SaveEdit">Save</button>
                         <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
@@ -53,6 +57,7 @@ else
                 <tr>
                     <td>@u.Username</td>
                     <td>@orgName</td>
+                    <td>@(u.IsGlobalAdmin ? "Yes" : "No")</td>
                     <td>
                         <button class="btn btn-sm btn-secondary me-2" @onclick="() => StartEdit(u)">Edit</button>
                     </td>
@@ -82,6 +87,10 @@ else
                         <option value="@o.Id">@o.Name</option>
                     }
                 </InputSelect>
+            </div>
+            <div class="col-auto form-check align-self-center">
+                <InputCheckbox class="form-check-input" @bind-Value="newUser.IsGlobalAdmin" />
+                <label class="form-check-label ms-1">Admin</label>
             </div>
             <div class="col-auto">
                 <button class="btn btn-primary" type="submit" disabled="@(newUser.OrganisationId == 0)">Add</button>
@@ -132,7 +141,8 @@ else
             Id = u.Id,
             Username = u.Username,
             PasswordHash = u.PasswordHash,
-            OrganisationId = u.OrganisationId
+            OrganisationId = u.OrganisationId,
+            IsGlobalAdmin = u.IsGlobalAdmin
         };
     }
 
@@ -145,6 +155,7 @@ else
         {
             existing.Username = editUser.Username;
             existing.OrganisationId = editUser.OrganisationId;
+            existing.IsGlobalAdmin = editUser.IsGlobalAdmin;
         }
         editUser = null;
     }
