@@ -21,7 +21,8 @@ public class Program
         builder.Services.AddScoped<ApiService>(sp =>
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
-            return new ApiService(factory.CreateClient("Api"));
+            var js = sp.GetRequiredService<IJSRuntime>();
+            return new ApiService(factory.CreateClient("Api"), js);
         });
 
         var app = builder.Build();
