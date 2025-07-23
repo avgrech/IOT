@@ -1,0 +1,59 @@
+@page "/parameters"
+@rendermode InteractiveServer
+@inject ApiService Api
+@using HomeAutomationBlazor.Models
+
+<PageTitle>Parameters</PageTitle>
+
+@if (!Api.IsAuthenticated)
+{
+    <p>Please <NavLink href="/login">log in</NavLink> to manage parameters.</p>
+}
+else if (parameters == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>DeviceTypeId</th>
+                <th>Is Sensor</th>
+                <th>Shown</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in parameters)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>@p.DeviceTypeId</td>
+                <td>@p.IsSensor</td>
+                <td>
+                    <InputCheckbox @bind-Value="p.IsShown" @onchange="() => Save(p)" disabled="@(!Api.IsGlobalAdmin)" />
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Parameter>? parameters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Api.IsAuthenticated)
+        {
+            parameters = await Api.GetParameters();
+        }
+    }
+
+    private async Task Save(Parameter p)
+    {
+        if (!Api.IsGlobalAdmin) return;
+        await Api.UpdateParameter(p);
+    }
+}

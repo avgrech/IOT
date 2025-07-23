@@ -189,6 +189,14 @@ public class ApiService
     public async Task DeleteUser(int id) =>
         await _http.DeleteAsync($"api/users/{id}");
 
+    public async Task<List<Parameter>?> GetParameters() =>
+        await _http.GetFromJsonAsync<List<Parameter>>("api/parameters");
+
+    public async Task UpdateParameter(Parameter param)
+    {
+        await _http.PutAsJsonAsync($"api/parameters/{param.Id}", param);
+    }
+
     private record TokenResponse(string token);
 
     private void ParseToken()
