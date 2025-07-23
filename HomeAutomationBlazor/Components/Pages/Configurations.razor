@@ -372,6 +372,7 @@ else
             parameterOptions = parameters
                 .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
         }
+        StateHasChanged();
     }
 
     private void UpdateTrueOptions(ChangeEventArgs e)
@@ -385,6 +386,7 @@ else
             trueOptions = parameters
                 .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
         }
+        StateHasChanged();
     }
 
     private void UpdateFalseOptions(ChangeEventArgs e)
@@ -398,6 +400,7 @@ else
             falseOptions = parameters
                 .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
         }
+        StateHasChanged();
     }
 
     private void AddCondition()
