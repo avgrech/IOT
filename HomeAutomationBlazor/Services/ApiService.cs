@@ -17,6 +17,7 @@ public class ApiService
     public string? Token { get; private set; }
     public bool IsAuthenticated => Token != null;
     public bool IsGlobalAdmin { get; private set; }
+    public string? Username { get; private set; }
     public event Action? AuthStateChanged;
 
     public ApiService(HttpClient http, IJSRuntime js)
@@ -228,12 +229,14 @@ public class ApiService
     private void ParseToken()
     {
         IsGlobalAdmin = false;
+        Username = null;
         if (Token == null)
             return;
         try
         {
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(Token);
+            Username = jwt.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value;
             if (jwt.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value == "GlobalAdmin")
             {
                 IsGlobalAdmin = true;
@@ -249,6 +252,7 @@ public class ApiService
     {
         Token = null;
         IsGlobalAdmin = false;
+        Username = null;
         _http.DefaultRequestHeaders.Authorization = null;
         try
         {

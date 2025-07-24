@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@inject ApiService Api
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +9,10 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            @if (Api.IsAuthenticated && !string.IsNullOrEmpty(Api.Username))
+            {
+                <span>Hello, @Api.Username</span>
+            }
         </div>
 
         <article class="content px-4">
@@ -26,9 +31,29 @@
 @code {
     private ErrorBoundary? errorBoundary;
 
+    protected override void OnInitialized()
+    {
+        Api.AuthStateChanged += HandleAuthChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Api.InitializeAsync();
+        }
+    }
+
     private void Recover()
     {
         errorBoundary?.Recover();
+    }
+
+    private void HandleAuthChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Api.AuthStateChanged -= HandleAuthChanged;
     }
 }
 
