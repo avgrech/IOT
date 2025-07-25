@@ -27,21 +27,21 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var c in configs)
-        {
-            var cfg = ParseConfig(c.Content);
-            var routerName = routers?.FirstOrDefault(r => r.UniqueId == cfg.RouterDeviceId)?.FriendlyName ?? cfg.RouterDeviceId;
-            <tr>
-                <td>@cfg.ConfigurationName</td>
-                <td>@routerName</td>
-                <td>
-                    <button class="btn btn-sm btn-secondary" @onclick="() => Edit(c)">Edit</button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(c.Id)">Delete</button>
-                </td>
-            </tr>
-        }
+            @foreach (var c in configs)
+            {
+                var cfg = ParseConfig(c.Content);
+                var routerName = routers?.FirstOrDefault(r => r.UniqueId == cfg.RouterDeviceId)?.FriendlyName ?? cfg.RouterDeviceId;
+                <tr>
+                    <td>@cfg.ConfigurationName</td>
+                    <td>@routerName</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Edit(c)">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Delete(c.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 
@@ -92,7 +92,10 @@ else
             {
                 <div class="mb-3">
                     <label class="form-label">Device</label>
-                    <InputSelect class="form-select" @bind-Value="newCondition.Sensor.deviceName" @bind-Value:event="oninput" @onchange="UpdateParameterOptions">
+                    <InputSelect class="form-select"
+                                 Value="newCondition.Sensor.deviceName"
+                                 ValueChanged="@(EventCallback.Factory.Create<string?>(this, OnDeviceChanged))"
+                                 ValueExpression="() => newCondition.Sensor.deviceName">
                         <option value="">Select device...</option>
                         @foreach (var d in devices)
                         {
@@ -361,17 +364,23 @@ else
         configs?.RemoveAll(c => c.Id == id);
     }
 
-    private void UpdateParameterOptions(ChangeEventArgs e)
+    private async Task OnDeviceChanged(string? selectedDevice)
     {
-        var deviceName = e.Value?.ToString();
+        newCondition.Sensor.deviceName = selectedDevice;
+        UpdateParameterOptions(selectedDevice);
+    }
+
+    private void UpdateParameterOptions(string? deviceName)
+    {
         var dev = devices?.FirstOrDefault(d => d.Name == deviceName);
-        parameterOptions = dev?.DeviceType?.Parameters?
-            .Where(p => p.IsShown);
+        parameterOptions = dev?.DeviceType?.Parameters?.Where(p => p.IsShown);
+
         if ((parameterOptions == null || !parameterOptions.Any()) && parameters != null && dev != null)
         {
             parameterOptions = parameters
                 .Where(p => p.DeviceTypeId == dev.DeviceTypeId && p.IsShown);
         }
+
         StateHasChanged();
     }
 
