@@ -29,7 +29,6 @@ public class ApiService
     public async Task InitializeAsync()
     {
         if (_initialized) return;
-        _initialized = true;
         try
         {
             var token = await _js.InvokeAsync<string>("authToken.get");
@@ -40,6 +39,7 @@ public class ApiService
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
                 AuthStateChanged?.Invoke();
             }
+            _initialized = true;
         }
         catch
         {
