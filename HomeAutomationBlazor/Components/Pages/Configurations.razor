@@ -92,7 +92,7 @@ else
             {
                 <div class="mb-3">
                     <label class="form-label">Device</label>
-                    <InputSelect class="form-select" @bind-Value="newCondition.Sensor.deviceName" @onchange="UpdateParameterOptions">
+                    <InputSelect class="form-select" @bind-Value="newCondition.Sensor.deviceName" @bind-Value:event="oninput" @onchange="UpdateParameterOptions">
                         <option value="">Select device...</option>
                         @foreach (var d in devices)
                         {
@@ -151,7 +151,7 @@ else
             {
                 <div class="mb-3">
                     <label class="form-label">Device</label>
-                    <InputSelect class="form-select" @bind-Value="newTrueAction.deviceName" @onchange="UpdateTrueOptions">
+                    <InputSelect class="form-select" @bind-Value="newTrueAction.deviceName" @bind-Value:event="oninput" @onchange="UpdateTrueOptions">
                         <option value="">Select device...</option>
                         @foreach (var d in devices)
                         {
@@ -188,7 +188,7 @@ else
             {
                 <div class="mb-3">
                     <label class="form-label">Device</label>
-                    <InputSelect class="form-select" @bind-Value="newFalseAction.deviceName" @onchange="UpdateFalseOptions">
+                    <InputSelect class="form-select" @bind-Value="newFalseAction.deviceName" @bind-Value:event="oninput" @onchange="UpdateFalseOptions">
                         <option value="">Select device...</option>
                         @foreach (var d in devices)
                         {
